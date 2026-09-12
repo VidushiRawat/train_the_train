@@ -24,38 +24,36 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
   const indicator = FEED_INDICATOR[feedStatus];
 
   return (
-    <View className="border-border bg-panel pt-safe-offset-3 gap-3 border-b px-4 pb-3">
-      <View className="flex-row items-center gap-3">
-        <Image
-          source={require('@/assets/train-the-train-logo.png')}
-          accessibilityLabel="Train the Train — Ladies on Track"
-          resizeMode="contain"
-          style={{ width: 96, height: 96 }}
-        />
-        <View className="flex-1" />
-        <View className={`size-2 rounded-full ${indicator.dot}`} />
-        <Typography type="body-xs" className={`${indicator.text} tracking-wide`}>
-          {indicator.label}
+    <View className="border-border bg-panel pt-safe-offset-2 flex-row items-center gap-3 border-b px-3 pb-2">
+      <Image
+        source={require('@/assets/train-the-train-logo.png')}
+        accessibilityLabel="Train the Train — Ladies on Track"
+        resizeMode="contain"
+        style={{ width: 64, height: 64 }}
+      />
+
+      <View className="min-w-0 flex-1">
+        <Typography type="h4" weight="semibold">
+          {title}
+        </Typography>
+        <Typography type="body-xs" color="muted">
+          {subtitle}
         </Typography>
       </View>
 
-      <View className="flex-row flex-wrap items-end justify-between gap-x-3 gap-y-2">
-        <View className="min-w-48 flex-1">
-          <Typography type="h4" weight="semibold">
-            {title}
-          </Typography>
-          <Typography type="body-xs" color="muted">
-            {subtitle}
+      <View className="shrink-0 items-end gap-0.5">
+        <View className="flex-row items-center gap-1.5">
+          <View className={`size-2 rounded-full ${indicator.dot}`} />
+          <Typography type="body-xs" className={`${indicator.text} tracking-wide`}>
+            {indicator.label}
           </Typography>
         </View>
-        <View className="shrink-0 items-end">
-          <Typography type="body" weight="semibold">
-            {formatClock(nowSeconds)}
-          </Typography>
-          <Typography type="body-xs" color="muted">
-            {berlinDateLabel()} · Berlin
-          </Typography>
-        </View>
+        <Typography type="body" weight="semibold">
+          {formatClock(nowSeconds)}
+        </Typography>
+        <Typography type="body-xs" color="muted">
+          {berlinDateLabel()} · Berlin
+        </Typography>
       </View>
     </View>
   );

@@ -98,8 +98,11 @@ function MovementGroup({
   const copy = MOVEMENT_COPY[movement];
 
   return (
-    <View className={cn('bg-surface-secondary min-w-0 rounded-xl border p-3', copy.border)}>
-      <View className="flex-row items-center gap-2">
+    <View
+      className={cn('bg-surface-secondary min-w-36 flex-1 rounded-lg border p-2.5', copy.border)}
+      style={{ flexBasis: 148 }}
+    >
+      <View className="flex-row items-center gap-1.5">
         <MovementIcon movement={movement} />
         <View className="min-w-0 flex-1">
           <Typography type="body-sm" weight="semibold" className={copy.tone}>
@@ -115,11 +118,11 @@ function MovementGroup({
       </View>
 
       {trains.length > 0 ? (
-        <View className="mt-3 flex-row flex-wrap gap-2">
+        <View className="mt-2 flex-row flex-wrap gap-1.5">
           {trains.map((train) => (
             <View
               key={train.id}
-              className="border-border bg-surface min-w-0 flex-row items-center gap-1.5 rounded-lg border px-2 py-1.5"
+              className="border-border bg-surface min-w-0 flex-row items-center gap-1 rounded-md border px-1.5 py-1"
             >
               <CategoryBadge category={train.category} />
               <Typography type="body-xs" weight="semibold">
@@ -129,7 +132,7 @@ function MovementGroup({
           ))}
         </View>
       ) : (
-        <Typography type="body-xs" color="muted" className="mt-3">
+        <Typography type="body-xs" color="muted" className="mt-1.5">
           No services
         </Typography>
       )}
@@ -157,15 +160,16 @@ export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
   );
 
   return (
-    <Panel title="Station movements">
-      <View className="border-border bg-surface-secondary mb-3 flex-row flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2.5">
+    <Panel title="Station movements" compact>
+      <View className="border-border bg-surface-secondary mb-2 flex-row flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-2.5 py-1.5">
         <View className="bg-success/15 rounded px-1.5 py-0.5">
           <Typography type="body-xs" weight="bold" className="text-success">
             LIVE DB
           </Typography>
         </View>
         <Typography type="body-xs" color="muted" className="shrink">
-          Services are live; movement is timetable-inferred. Track details are hidden.
+          Services are live; movement is inferred from the timetable, not GPS. Track details are
+          hidden.
         </Typography>
       </View>
 
@@ -183,7 +187,7 @@ export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
           Loading Hamburg Hauptbahnhof movements…
         </Typography>
       ) : (
-        <View className="gap-2.5">
+        <View className="flex-row flex-wrap gap-2">
           {MOVEMENT_ORDER.map((movement) => (
             <MovementGroup
               key={movement}

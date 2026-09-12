@@ -10,16 +10,30 @@ interface PanelProps {
   hint?: string;
   right?: ReactNode;
   children: ReactNode;
+  compact?: boolean;
   className?: string;
   contentClassName?: string;
 }
 
 /** Framed section used across the cockpit. */
-export function Panel({ title, hint, right, children, className, contentClassName }: PanelProps) {
+export function Panel({
+  title,
+  hint,
+  right,
+  children,
+  compact = false,
+  className,
+  contentClassName,
+}: PanelProps) {
   return (
     <View className={cn('border-border bg-panel overflow-hidden rounded-2xl border', className)}>
       {(title || right) && (
-        <View className="border-border flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-4 py-3">
+        <View
+          className={cn(
+            'border-border flex-row flex-wrap items-center justify-between gap-x-3 border-b px-4',
+            compact ? 'gap-y-1 px-3 py-2' : 'gap-y-2 py-3',
+          )}
+        >
           <View className="min-w-48 flex-1">
             {title && (
               <Typography type="body-xs" weight="semibold" className="text-muted tracking-[2px]">
@@ -35,7 +49,9 @@ export function Panel({ title, hint, right, children, className, contentClassNam
           {right}
         </View>
       )}
-      <View className={cn('px-4 py-3', contentClassName)}>{children}</View>
+      <View className={cn(compact ? 'px-3 py-2.5' : 'px-4 py-3', contentClassName)}>
+        {children}
+      </View>
     </View>
   );
 }
