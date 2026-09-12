@@ -168,6 +168,52 @@ function TrackTrain({ train }: { train: StationTrain }) {
   );
 }
 
+function CurrentImpactSummary({ trains }: { trains: StationTrain[] }) {
+  const cancelledCount = trains.filter((train) => train.cancelled).length;
+  const delayedCount = trains.length - cancelledCount;
+  const leadTrain = trains.reduce<StationTrain | undefined>((highestImpact, train) => {
+    if (!highestImpact) return train;
+    if (train.cancelled !== highestImpact.cancelled) return train.cancelled ? train : highestImpact;
+    return train.delayMin > highestImpact.delayMin ? train : highestImpact;
+  }, undefined);
+
+  if (!leadTrain) return null;
+
+  const affectedLabel = `${trains.length} affected ${trains.length === 1 ? 'service' : 'services'}`;
+  const detailParts = [
+    delayedCount > 0 ? `${delayedCount} delayed` : null,
+    cancelledCount > 0 ? `${cancelledCount} cancelled` : null,
+  ].filter(Boolean);
+
+  return (
+    <View className="border-danger/35 bg-danger-soft gap-2 rounded-xl border p-3">
+      <View className="flex-row flex-wrap items-center justify-between gap-2">
+        <Typography type="body-xs" className="text-danger font-bold tracking-wide uppercase">
+          Current impact
+        </Typography>
+        <Typography type="body-xs" className="text-danger font-semibold">
+          {affectedLabel} · {detailParts.join(' · ')}
+        </Typography>
+      </View>
+
+      <View className="flex-row flex-wrap items-end justify-between gap-x-3 gap-y-1">
+        <View className="min-w-0 flex-1">
+          <Typography type="h4" className="text-foreground font-bold">
+            {leadTrain.service} to {leadTrain.destination}
+          </Typography>
+          <Typography type="body-xs" className="text-muted">
+            {leadTrain.platform > 0 ? `Platform ${leadTrain.platform}` : 'Platform pending'} ·
+            Highest current impact
+          </Typography>
+        </View>
+        <Typography type="h3" className="text-danger font-bold">
+          {leadTrain.cancelled ? 'Cancelled' : `+${leadTrain.delayMin} min`}
+        </Typography>
+      </View>
+    </View>
+  );
+}
+
 function MovementLegend({ trains }: { trains: StationTrain[] }) {
   const counts = trains.reduce<Record<Movement, number>>(
     (total, train) => {
@@ -251,7 +297,12 @@ export function TrainMovementMap({ nowSeconds }: TrainMovementMapProps) {
           </Typography>
         </View>
 
-        {stationTrains.length > 0 ? <MovementLegend trains={stationTrains} /> : null}
+        {stationTrains.length > 0 ? (
+          <>
+            <CurrentImpactSummary trains={stationTrains} />
+            <MovementLegend trains={stationTrains} />
+          </>
+        ) : null}
 
         {isLoading && data.length === 0 ? (
           <Typography type="body-xs" className="text-muted py-3">
