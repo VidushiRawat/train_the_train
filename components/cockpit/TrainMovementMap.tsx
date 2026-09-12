@@ -222,6 +222,7 @@ export function TrainMovementMap({ nowSeconds }: TrainMovementMapProps) {
         )
         .filter(
           (train) =>
+            (train.delayMin > 0 || train.cancelled) &&
             train.untilDeparture >= -ACTIVE_WINDOW_BEHIND_MIN &&
             train.untilDeparture <= ACTIVE_WINDOW_AHEAD_MIN,
         )
@@ -234,8 +235,8 @@ export function TrainMovementMap({ nowSeconds }: TrainMovementMapProps) {
 
   return (
     <Panel
-      title="Hamburg Hbf track movement"
-      hint="Live platform assignments · movement inferred from timetable"
+      title="Hamburg Hbf service issues"
+      hint="Delayed and cancelled services · movement inferred from timetable"
     >
       <View className="gap-2.5">
         <View className="flex-row flex-wrap items-center justify-between gap-2">
@@ -266,7 +267,7 @@ export function TrainMovementMap({ nowSeconds }: TrainMovementMapProps) {
 
         {!isLoading && !isError && stationTrains.length === 0 ? (
           <Typography type="body-xs" className="text-muted py-3">
-            No southbound services are inside the active station window.
+            No delayed or cancelled services are inside the active station window.
           </Typography>
         ) : null}
 
