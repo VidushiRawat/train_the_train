@@ -5,6 +5,7 @@ import { Gauge, ScrollText, Scale, TrainFront } from 'lucide-react-native';
 import { useEffect } from 'react';
 
 import { startCorridorClock, useCockpitStore } from '@/lib/store';
+import { useCorridorFeed } from '@/hooks/useCorridorFeed';
 
 /** Control-room chrome is dark, so status bar content is always light. */
 const STATUS_BAR_STYLE = 'light' as const;
@@ -21,6 +22,8 @@ export default function TabLayout() {
   ]);
   const pending = useCockpitStore((state) => state.pending);
 
+  // Live DB board + Berlin clock run for as long as the cockpit is open.
+  useCorridorFeed();
   useEffect(() => startCorridorClock(), []);
 
   return (

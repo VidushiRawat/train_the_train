@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
-import { Button, Typography, useThemeColor } from 'heroui-native';
-import { Zap } from 'lucide-react-native';
+import { Button, Typography } from 'heroui-native';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -15,10 +14,8 @@ import { formatTimeOfDay } from '@/lib/utils';
 export default function DecisionScreen() {
   const pending = useCockpitStore((state) => state.pending);
   const decide = useCockpitStore((state) => state.decide);
-  const triggerDisruption = useCockpitStore((state) => state.triggerDisruption);
   const lastDecision = useCockpitStore((state) => state.log[0]);
   const [selectedByIncident, setSelectedByIncident] = useState<Record<string, string>>({});
-  const [accentForeground] = useThemeColor(['accent-foreground']);
 
   const selectedId = pending
     ? (selectedByIncident[pending.id] ?? pending.recommendedId)
@@ -124,15 +121,12 @@ export default function DecisionScreen() {
             <Panel title="Standing by" hint="Minor incidents never reach this screen">
               <View className="gap-3">
                 <Typography type="body-sm">
-                  The corridor is running to plan. When a disruption hits, the agents run
-                  immediately: anything under 8 minutes at Hannover with no connection at risk is
-                  applied on the spot. Bigger events land here with both plans side by side.
+                  Nothing on the live board needs a call right now. The Hannover Hbf feed is re-read
+                  every 45 seconds; as soon as a Hamburg-corridor service is reported 3 minutes or
+                  more down, both agents run. Anything under 8 minutes with no connection at risk is
+                  applied on the spot — bigger events land here with both plans side by side.
                 </Typography>
-                <Button variant="primary" onPress={triggerDisruption}>
-                  <Zap size={18} color={accentForeground} />
-                  <Button.Label>Inject random disruption</Button.Label>
-                </Button>
-                <Button variant="ghost" onPress={() => router.push('/')}>
+                <Button variant="secondary" onPress={() => router.push('/')}>
                   <Button.Label>Back to corridor</Button.Label>
                 </Button>
               </View>

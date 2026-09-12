@@ -33,6 +33,7 @@ const STATUS_LABEL: Record<TrainStatus, string> = {
   delayed: 'Delayed',
   held: 'Held',
   rerouted: 'Re-platformed',
+  cancelled: 'Cancelled',
 };
 
 const STATUS_CLASS: Record<TrainStatus, { dot: string; text: string }> = {
@@ -40,6 +41,7 @@ const STATUS_CLASS: Record<TrainStatus, { dot: string; text: string }> = {
   delayed: { dot: 'bg-danger', text: 'text-danger' },
   held: { dot: 'bg-warning', text: 'text-warning' },
   rerouted: { dot: 'bg-accent', text: 'text-accent' },
+  cancelled: { dot: 'bg-danger', text: 'text-danger' },
 };
 
 export function StatusPill({ status }: { status: TrainStatus }) {

@@ -7,7 +7,7 @@
 
 export type TrainCategory = 'ICE' | 'IC' | 'RE' | 'RB';
 
-export type TrainStatus = 'on-time' | 'delayed' | 'held' | 'rerouted';
+export type TrainStatus = 'on-time' | 'delayed' | 'held' | 'rerouted' | 'cancelled';
 
 /** Station on the Hamburg – Hannover corridor. */
 export interface CorridorStation {
@@ -58,23 +58,23 @@ export interface Train {
   /** Passengers boarding at the next corridor stop. */
   passengersBoarding: number;
   connections: OnwardConnection[];
+  /** Delay reported by the live DB feed, minutes. */
+  liveDelayMin: number;
+  /** Extra delay this session's own decisions put on the train. */
+  imposedDelayMin: number;
+  /** liveDelayMin + imposedDelayMin — what the cockpit plans against. */
   delayMin: number;
+  /** Cancelled in the live feed. */
+  cancelled: boolean;
+  /** Delay causes as published by DB, in the original German. */
+  causes: string[];
+  /** False when the feed only has the timetable, no realtime data yet. */
+  hasRealtime: boolean;
   status: TrainStatus;
   /** Set when a dispatcher decision moved the train off its booked platform. */
   reroutedTo?: number;
   /** Short note rendered on the corridor view after a decision. */
   note?: string;
-}
-
-export interface DisruptionTemplate {
-  id: string;
-  label: string;
-  /** Where on the corridor the event happens. */
-  station: string;
-  /** Plain-English cause shown to the controller. */
-  detail: string;
-  minDelayMin: number;
-  maxDelayMin: number;
 }
 
 export interface Disruption {

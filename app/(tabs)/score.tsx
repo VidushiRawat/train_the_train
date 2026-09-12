@@ -102,6 +102,10 @@ export default function ScoreScreen() {
               The arbiter treats one broken connection as roughly eight minutes of network delay,
               which is why it sometimes accepts a longer hold to keep people moving.
             </Typography>
+            <Typography type="body-xs" color="muted">
+              Delay minutes come from the live DB feed. Passenger figures are estimates from service
+              class and time of day, so treat them as scale, not exact counts.
+            </Typography>
           </View>
         </Panel>
 

@@ -1,4 +1,5 @@
-import { DISRUPTION_TEMPLATES, SPARE_PLATFORMS } from './data';
+import { SPARE_PLATFORMS } from './data';
+import { corridorStationAt, translateCause } from './db-api';
 import type {
   BrokenConnection,
   Disruption,
@@ -17,14 +18,15 @@ import { formatCount, formatTimeOfDay } from './utils';
 /**
  * Decision engine behind the cockpit.
  *
- * Digital twin -> two competing agents -> arbiter:
+ * Live DB corridor state -> two competing agents -> arbiter:
  *  - Agent A (network) minimises total delay minutes across the corridor.
  *  - Agent B (passenger) minimises broken journeys and missed connections.
  *  - The arbiter scores both, may build a blended option, and gates the
  *    result: minor incidents are applied automatically, bigger ones wait
  *    for the controller.
  *
- * Everything is a deterministic mock model — no network calls, no ML.
+ * Delays, platforms and causes come from the live feed; the plans and their
+ * impact are a deterministic model, not ML.
  */
 
 /** Minutes a train can realistically claw back before Hannover Hbf. */
@@ -398,6 +400,12 @@ function resolveSeverity(
   baseline: ImpactMetrics,
   knockOnCount: number,
 ): { severity: Severity; reason: string } {
+  if (train.cancelled) {
+    return {
+      severity: 'major',
+      reason: `${train.service} is cancelled in the live feed — a controller decides how its passengers travel on.`,
+    };
+  }
   if (baseline.missedConnections > 0) {
     return {
       severity: 'major',
@@ -437,47 +445,69 @@ export function savingsVersusBaseline(baseline: ImpactMetrics, chosen: ImpactMet
   };
 }
 
-/** Trains that can still be disrupted: still running, not already piled up. */
-export function disruptableTrains(trains: Train[], nowMinutes: number) {
-  const candidates = trains.filter(
-    (train) => train.scheduledArrival + train.delayMin > nowMinutes + 4 && train.delayMin < 22,
-  );
-  return candidates.length > 0 ? candidates : trains;
-}
-
-export interface DrawnDisruption {
+export interface DetectedDisruption {
   train: Train;
   disruption: Disruption;
   delayMin: number;
 }
 
-/** Pick a random train and cause, and roll the delay it creates. */
-export function drawDisruption(trains: Train[], nowMinutes: number): DrawnDisruption {
-  const candidates = disruptableTrains(trains, nowMinutes);
-  const train = candidates[Math.floor(Math.random() * candidates.length)];
-  const template = DISRUPTION_TEMPLATES[Math.floor(Math.random() * DISRUPTION_TEMPLATES.length)];
-  const span = template.maxDelayMin - template.minDelayMin;
-  const delayMin = template.minDelayMin + Math.round(Math.random() * span);
+/**
+ * Turn what the live feed says about one train into a disruption record:
+ * where on the corridor it is, and the cause DB published for it.
+ */
+export function describeLiveDisruption(train: Train, nowMinutes: number): DetectedDisruption {
+  const { offset } = trainPosition(train, nowMinutes);
+  const station = corridorStationAt(offset);
+  const cause = train.causes[0];
+
+  if (train.cancelled) {
+    return {
+      train,
+      disruption: {
+        id: `${train.id}-cancelled`,
+        label: 'Service cancelled',
+        station,
+        detail: cause
+          ? translateCause(cause).detail
+          : `DB has cancelled ${train.service} into Hannover Hbf. Everyone booked on it needs the next path.`,
+      },
+      delayMin: Math.max(train.delayMin, 20),
+    };
+  }
+
+  if (cause) {
+    const translated = translateCause(cause);
+    return {
+      train,
+      disruption: {
+        id: `${train.id}-${train.liveDelayMin}`,
+        label: translated.label,
+        station,
+        detail: translated.detail,
+      },
+      delayMin: train.delayMin,
+    };
+  }
 
   return {
     train,
     disruption: {
-      id: `${template.id}-${nowMinutes}`,
-      label: template.label,
-      station: template.station,
-      detail: template.detail,
+      id: `${train.id}-${train.liveDelayMin}`,
+      label: 'Running late',
+      station,
+      detail: `The feed has ${train.service} ${train.liveDelayMin} min down near ${station} with no cause published yet.`,
     },
-    delayMin: train.delayMin + delayMin,
+    delayMin: train.delayMin,
   };
 }
 
 /** Build the incident record the cockpit shows and logs. */
 export function createIncident(
   trains: Train[],
-  drawn: DrawnDisruption,
+  detected: DetectedDisruption,
   detectedAt: number,
 ): Incident {
-  const { train, disruption, delayMin } = drawn;
+  const { train, disruption, delayMin } = detected;
   const evaluation = evaluate(trains, train, delayMin);
 
   return {

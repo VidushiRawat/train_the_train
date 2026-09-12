@@ -1,6 +1,7 @@
 import { Typography } from 'heroui-native';
 import { View } from 'react-native';
 
+import { berlinDateLabel } from '@/lib/db-api';
 import { useCockpitStore } from '@/lib/store';
 import { formatClock } from '@/lib/utils';
 
@@ -9,9 +10,18 @@ interface CockpitHeaderProps {
   subtitle: string;
 }
 
-/** Control-room title bar: wordmark, screen name and the live corridor clock. */
+const FEED_INDICATOR = {
+  live: { dot: 'bg-success', text: 'text-success', label: 'LIVE' },
+  loading: { dot: 'bg-warning', text: 'text-warning', label: 'SYNCING' },
+  idle: { dot: 'bg-warning', text: 'text-warning', label: 'SYNCING' },
+  error: { dot: 'bg-danger', text: 'text-danger', label: 'NO FEED' },
+} as const;
+
+/** Control-room title bar: wordmark, feed state, screen name and Berlin clock. */
 export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
   const nowSeconds = useCockpitStore((state) => state.nowSeconds);
+  const feedStatus = useCockpitStore((state) => state.feed.status);
+  const indicator = FEED_INDICATOR[feedStatus];
 
   return (
     <View className="border-border bg-panel pt-safe-offset-3 gap-3 border-b px-4 pb-3">
@@ -25,9 +35,9 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
           TRAIN2TRAIN
         </Typography>
         <View className="flex-1" />
-        <View className="bg-success size-2 rounded-full" />
-        <Typography type="body-xs" className="text-success tracking-wide">
-          LIVE
+        <View className={`size-2 rounded-full ${indicator.dot}`} />
+        <Typography type="body-xs" className={`${indicator.text} tracking-wide`}>
+          {indicator.label}
         </Typography>
       </View>
 
@@ -45,7 +55,7 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
             {formatClock(nowSeconds)}
           </Typography>
           <Typography type="body-xs" color="muted">
-            Tue 8 Sep · corridor time
+            {berlinDateLabel()} · Berlin
           </Typography>
         </View>
       </View>

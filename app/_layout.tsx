@@ -2,6 +2,7 @@
 import '../global.css';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -47,6 +48,11 @@ export { ErrorBoundary };
 Uniwind.setTheme('dark');
 
 void SplashScreen.preventAutoHideAsync();
+
+/** One client for the whole app: the live DB board is the only query. */
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnReconnect: true } },
+});
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -140,12 +146,14 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <HeroUINativeProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ title: 'Train2Train' }} />
-        </Stack>
-        <InstallPrompt />
-      </HeroUINativeProvider>
+      <QueryClientProvider client={queryClient}>
+        <HeroUINativeProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" options={{ title: 'Train2Train' }} />
+          </Stack>
+          <InstallPrompt />
+        </HeroUINativeProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

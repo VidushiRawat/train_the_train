@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { Button, Typography, useThemeColor } from 'heroui-native';
-import { Clock, TrainFront, TriangleAlert, Users, Zap } from 'lucide-react-native';
+import { Clock, TrainFront, TriangleAlert, Users } from 'lucide-react-native';
 import { ScrollView, View } from 'react-native';
 
 import { CockpitHeader } from '@/components/cockpit/CockpitHeader';
 import { CorridorPanel } from '@/components/cockpit/CorridorPanel';
+import { FeedStatusPanel } from '@/components/cockpit/FeedStatusPanel';
 import { Panel } from '@/components/cockpit/Panel';
 import { StatTile } from '@/components/cockpit/StatTile';
 import { connectionsAtRisk } from '@/lib/agents';
@@ -16,15 +17,14 @@ export default function CorridorScreen() {
   const nowSeconds = useCockpitStore((state) => state.nowSeconds);
   const pending = useCockpitStore((state) => state.pending);
   const lastAuto = useCockpitStore((state) => state.lastAuto);
-  const triggerDisruption = useCockpitStore((state) => state.triggerDisruption);
+  const feedStatus = useCockpitStore((state) => state.feed.status);
   const dismissAutoNotice = useCockpitStore((state) => state.dismissAutoNotice);
 
-  const [muted, danger, success, warning, accentForeground] = useThemeColor([
+  const [muted, danger, success, warning] = useThemeColor([
     'muted',
     'danger',
     'success',
     'warning',
-    'accent-foreground',
   ]);
 
   const nowMinutes = Math.floor(nowSeconds / 60);
@@ -45,7 +45,10 @@ export default function CorridorScreen() {
 
   return (
     <View className="bg-background flex-1">
-      <CockpitHeader title="Corridor" subtitle="Hamburg Hbf → Hannover Hbf · live network state" />
+      <CockpitHeader
+        title="Corridor"
+        subtitle="Hamburg Hbf → Hannover Hbf · live Deutsche Bahn feed"
+      />
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}>
         <View className="flex-row gap-2">
@@ -59,7 +62,7 @@ export default function CorridorScreen() {
           <StatTile
             label="Services delayed"
             value={`${delayed.length}/${trains.length}`}
-            hint="next 60 minutes"
+            hint="inbound to Hannover"
             tone={delayed.length > 0 ? 'warning' : 'success'}
             icon={<TrainFront size={14} color={delayed.length > 0 ? warning : success} />}
           />
@@ -81,12 +84,7 @@ export default function CorridorScreen() {
           />
         </View>
 
-        <Button variant="primary" onPress={triggerDisruption} isDisabled={pending !== null}>
-          <Zap size={18} color={accentForeground} />
-          <Button.Label>
-            {pending ? 'Decision waiting — resolve it first' : 'Inject random disruption'}
-          </Button.Label>
-        </Button>
+        <FeedStatusPanel />
 
         {pending && (
           <Panel
@@ -132,12 +130,29 @@ export default function CorridorScreen() {
           </Panel>
         )}
 
-        <CorridorPanel trains={trains} nowMinutes={nowMinutes} focusedTrainId={pending?.trainId} />
+        {trains.length > 0 ? (
+          <CorridorPanel
+            trains={trains}
+            nowMinutes={nowMinutes}
+            focusedTrainId={pending?.trainId}
+          />
+        ) : (
+          <Panel title="Corridor Hamburg Hbf → Hannover Hbf" hint="Nothing inbound right now">
+            <Typography type="body-sm" color="muted">
+              {feedStatus === 'error'
+                ? 'The live board could not be read, so there is nothing to show. Use Refresh above once the connection is back.'
+                : feedStatus === 'live'
+                  ? 'No service from the Hamburg direction is booked into Hannover Hbf in the next 90 minutes. The board is re-read automatically.'
+                  : 'Reading the Hannover Hbf board…'}
+            </Typography>
+          </Panel>
+        )}
 
         <View className="flex-row items-center gap-2 px-1">
           <TrainFront size={12} color={muted} />
           <Typography type="body-xs" color="muted" className="flex-1">
-            Mock corridor twin. Positions advance with the session clock; no live feed is used.
+            Positions are drawn from booked run times and the live delay on each service. Incidents
+            are raised from real reported delays, not simulated.
           </Typography>
         </View>
       </ScrollView>
