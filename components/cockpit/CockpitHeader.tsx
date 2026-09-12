@@ -33,10 +33,10 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
       />
 
       <View className="min-w-0 flex-1">
-        <Typography type="h4" weight="semibold">
+        <Typography type="h4" weight="semibold" numberOfLines={1} ellipsizeMode="tail">
           {title}
         </Typography>
-        <Typography type="body-xs" color="muted">
+        <Typography type="body-xs" color="muted" numberOfLines={1} ellipsizeMode="tail">
           {subtitle}
         </Typography>
       </View>
@@ -51,7 +51,7 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
         <Typography type="body" weight="semibold">
           {formatClock(nowSeconds)}
         </Typography>
-        <Typography type="body-xs" color="muted">
+        <Typography type="body-xs" color="muted" numberOfLines={1}>
           {berlinDateLabel()} · Berlin
         </Typography>
       </View>

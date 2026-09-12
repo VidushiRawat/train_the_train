@@ -105,10 +105,16 @@ function MovementGroup({
       <View className="flex-row items-center gap-1.5">
         <MovementIcon movement={movement} />
         <View className="min-w-0 flex-1">
-          <Typography type="body-sm" weight="semibold" className={copy.tone}>
+          <Typography
+            type="body-sm"
+            weight="semibold"
+            className={copy.tone}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
             {copy.label}
           </Typography>
-          <Typography type="body-xs" color="muted">
+          <Typography type="body-xs" color="muted" numberOfLines={1} ellipsizeMode="tail">
             {copy.description}
           </Typography>
         </View>
@@ -125,7 +131,13 @@ function MovementGroup({
               className="border-border bg-surface min-w-0 flex-row items-center gap-1 rounded-md border px-1.5 py-1"
             >
               <CategoryBadge category={train.category} />
-              <Typography type="body-xs" weight="semibold">
+              <Typography
+                type="body-xs"
+                weight="semibold"
+                className="min-w-0 shrink"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {train.service}
               </Typography>
             </View>
@@ -161,13 +173,19 @@ export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
 
   return (
     <Panel title="Station movements" compact>
-      <View className="border-border bg-surface-secondary mb-2 flex-row flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-2.5 py-1.5">
+      <View className="border-border bg-surface-secondary mb-2 flex-row items-center gap-2 rounded-lg border px-2.5 py-1.5">
         <View className="bg-success/15 rounded px-1.5 py-0.5">
           <Typography type="body-xs" weight="bold" className="text-success">
             LIVE DB
           </Typography>
         </View>
-        <Typography type="body-xs" color="muted" className="shrink">
+        <Typography
+          type="body-xs"
+          color="muted"
+          className="min-w-0 flex-1"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           Services are live; movement is inferred from the timetable, not GPS. Track details are
           hidden.
         </Typography>
@@ -175,15 +193,33 @@ export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
 
       {query.isError ? (
         <View className="border-danger/50 bg-danger/10 rounded-lg border px-3 py-3">
-          <Typography type="body-sm" weight="semibold" className="text-danger">
+          <Typography
+            type="body-sm"
+            weight="semibold"
+            className="text-danger"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
             Hamburg station board unavailable
           </Typography>
-          <Typography type="body-xs" color="muted" className="mt-1">
+          <Typography
+            type="body-xs"
+            color="muted"
+            className="mt-1"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
             The direct public feed may be blocked in this browser.
           </Typography>
         </View>
       ) : query.isPending ? (
-        <Typography type="body-sm" color="muted" className="py-6 text-center">
+        <Typography
+          type="body-sm"
+          color="muted"
+          className="py-6 text-center"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           Loading Hamburg Hauptbahnhof movements…
         </Typography>
       ) : (

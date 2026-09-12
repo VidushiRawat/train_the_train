@@ -36,12 +36,24 @@ export function Panel({
         >
           <View className="min-w-48 flex-1">
             {title && (
-              <Typography type="body-xs" weight="semibold" className="text-muted tracking-[2px]">
+              <Typography
+                type="body-xs"
+                weight="semibold"
+                className="text-muted tracking-[2px]"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {title.toUpperCase()}
               </Typography>
             )}
             {hint && (
-              <Typography type="body-xs" color="muted" className="mt-0.5">
+              <Typography
+                type="body-xs"
+                color="muted"
+                className="mt-0.5"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {hint}
               </Typography>
             )}
