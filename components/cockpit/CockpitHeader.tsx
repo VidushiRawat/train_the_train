@@ -1,5 +1,5 @@
 import { Typography } from 'heroui-native';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 
 import { berlinDateLabel } from '@/lib/db-api';
 import { useCockpitStore } from '@/lib/store';
@@ -25,15 +25,13 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
 
   return (
     <View className="border-border bg-panel pt-safe-offset-3 gap-3 border-b px-4 pb-3">
-      <View className="flex-row items-center gap-2">
-        <View className="bg-accent size-6 items-center justify-center rounded-md">
-          <Typography type="body-xs" weight="bold" className="text-background">
-            T2
-          </Typography>
-        </View>
-        <Typography type="body-sm" weight="bold" className="tracking-[3px]">
-          TRAIN2TRAIN
-        </Typography>
+      <View className="flex-row items-center gap-3">
+        <Image
+          source={require('@/assets/train-the-train-logo.png')}
+          accessibilityLabel="Train the Train — Ladies on Track"
+          resizeMode="contain"
+          style={{ width: 96, height: 96 }}
+        />
         <View className="flex-1" />
         <View className={`size-2 rounded-full ${indicator.dot}`} />
         <Typography type="body-xs" className={`${indicator.text} tracking-wide`}>
