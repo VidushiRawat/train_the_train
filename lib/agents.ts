@@ -1,5 +1,5 @@
-import { SPARE_PLATFORMS } from './data';
-import { corridorStationAt, translateCause } from './db-api';
+import { HAMBURG_HBF, SPARE_PLATFORMS } from './data';
+import { translateCause } from './db-api';
 import type {
   BrokenConnection,
   Disruption,
@@ -29,7 +29,7 @@ import { formatCount, formatTimeOfDay } from './utils';
  * impact are a deterministic model, not ML.
  */
 
-/** Minutes a train can realistically claw back before Hannover Hbf. */
+/** Minutes a train can realistically claw back before Hamburg Hbf. */
 const RECOVERY_MIN = 2;
 /** Minutes a passenger needs on the platform for a transfer to hold up. */
 const MIN_TRANSFER_MIN = 2;
@@ -46,7 +46,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
-/** Delay that actually lands at Hannover Hbf after recovery running. */
+/** Delay that actually lands at Hamburg Hbf after recovery running. */
 function effectiveDelay(rawDelayMin: number) {
   return Math.max(0, rawDelayMin - RECOVERY_MIN);
 }
@@ -67,8 +67,8 @@ function findKnockOn(trains: Train[], train: Train, delayMin: number): KnockOnEf
 }
 
 /** Minutes an onward service must wait so the transfer still works. */
-function requiredHold(connection: OnwardConnection, delayAtHannover: number, walk: number) {
-  return Math.max(0, delayAtHannover + walk + MIN_TRANSFER_MIN - connection.transferBufferMin);
+function requiredHold(connection: OnwardConnection, delayAtHamburg: number, walk: number) {
+  return Math.max(0, delayAtHamburg + walk + MIN_TRANSFER_MIN - connection.transferBufferMin);
 }
 
 /** Extra delay a hold costs: the held train plus its own downstream path. */
@@ -76,8 +76,8 @@ function holdCost(holdMin: number) {
   return holdMin + Math.round(holdMin / 2);
 }
 
-function connectionAtRisk(connection: OnwardConnection, delayAtHannover: number, walk: number) {
-  return requiredHold(connection, delayAtHannover, walk) > 0;
+function connectionAtRisk(connection: OnwardConnection, delayAtHamburg: number, walk: number) {
+  return requiredHold(connection, delayAtHamburg, walk) > 0;
 }
 
 interface PlanInput {
@@ -230,7 +230,7 @@ export function evaluate(trains: Train[], train: Train, delayMin: number): Evalu
     author: 'network',
     title: canReplatform
       ? `Re-platform ${train.service} to platform ${sparePlatform} and let it run late`
-      : `Let ${train.service} run late, hold nothing at Hannover`,
+      : `Let ${train.service} run late, hold nothing at Hamburg`,
     actions: canReplatform
       ? [
           `Route ${train.service} into platform ${sparePlatform} instead of ${train.platform}`,
@@ -247,7 +247,7 @@ export function evaluate(trains: Train[], train: Train, delayMin: number): Evalu
       : `The corridor absorbs ${arrivalDelay} min best if nothing waits. Every held train would add its own delay on top.`,
     tradeoff:
       planA.effects.brokenConnections.length > 0
-        ? `${formatCount(planA.effects.brokenConnections.length, 'connection')} at Hannover breaks — ${sum(planA.effects.brokenConnections.map((item) => item.transferPassengers))} passengers rebook.`
+        ? `${formatCount(planA.effects.brokenConnections.length, 'connection')} at Hamburg breaks — ${sum(planA.effects.brokenConnections.map((item) => item.transferPassengers))} passengers rebook.`
         : 'No connection is at risk with this delay, so nothing is lost.',
     metrics: planA.metrics,
     effects: planA.effects,
@@ -409,13 +409,13 @@ function resolveSeverity(
   if (baseline.missedConnections > 0) {
     return {
       severity: 'major',
-      reason: `${formatCount(baseline.missedConnections, 'connection')} at Hannover Hbf is at risk — a controller signs this off.`,
+      reason: `${formatCount(baseline.missedConnections, 'connection')} at Hamburg Hbf is at risk — a controller signs this off.`,
     };
   }
   if (arrivalDelay >= 8) {
     return {
       severity: 'major',
-      reason: `${arrivalDelay} min at Hannover is above the 8 min auto-apply limit.`,
+      reason: `${arrivalDelay} min at Hamburg is above the 8 min auto-apply limit.`,
     };
   }
   if (knockOnCount >= 2) {
@@ -452,12 +452,10 @@ export interface DetectedDisruption {
 }
 
 /**
- * Turn what the live feed says about one train into a disruption record:
- * where on the corridor it is, and the cause DB published for it.
+ * Turn what the Hamburg Hbf board says about one train into a disruption record.
  */
-export function describeLiveDisruption(train: Train, nowMinutes: number): DetectedDisruption {
-  const { offset } = trainPosition(train, nowMinutes);
-  const station = corridorStationAt(offset);
+export function describeLiveDisruption(train: Train, _nowMinutes: number): DetectedDisruption {
+  const station = HAMBURG_HBF.name;
   const cause = train.causes[0];
 
   if (train.cancelled) {
@@ -469,7 +467,7 @@ export function describeLiveDisruption(train: Train, nowMinutes: number): Detect
         station,
         detail: cause
           ? translateCause(cause).detail
-          : `DB has cancelled ${train.service} into Hannover Hbf. Everyone booked on it needs the next path.`,
+          : `DB has cancelled ${train.service} into Hamburg Hbf. Everyone booked on it needs the next path.`,
       },
       delayMin: Math.max(train.delayMin, 20),
     };

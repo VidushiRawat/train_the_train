@@ -104,7 +104,7 @@ export function TrainRow({ train, nowMinutes, isFocused }: TrainRowProps) {
       {train.connections.length > 0 && (
         <Typography type="body-xs" className={atRisk.length > 0 ? 'text-danger' : 'text-muted'}>
           {train.connections.length} onward connection{train.connections.length === 1 ? '' : 's'} at
-          Hannover · {transferring} transferring
+          Hamburg Hbf · {transferring} transferring
           {atRisk.length > 0
             ? ` · ${atRisk.map((connection) => connection.service).join(', ')} at risk`
             : ''}

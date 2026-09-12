@@ -28,7 +28,7 @@ export interface FeedState {
   sourceLabel?: string;
   /** Epoch ms of the last successful read. */
   fetchedAt?: number;
-  /** Services on the Hannover board before the corridor filter. */
+  /** Services on the Hamburg Hbf board before incident selection. */
   boardSize?: number;
   error?: string;
 }

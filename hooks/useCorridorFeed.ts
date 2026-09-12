@@ -4,14 +4,14 @@ import { useCallback, useEffect } from 'react';
 import { fetchCorridorSnapshot } from '@/lib/db-api';
 import { useCockpitStore } from '@/lib/store';
 
-/** How often the Hannover Hbf board is re-read. */
+/** How often the Hamburg Hbf board is re-read. */
 export const FEED_INTERVAL_MS = 45_000;
 
 const FEED_KEY = ['corridor-board'] as const;
 
 /**
- * Polls the live Hamburg–Hannover board and pushes every reading into the
- * cockpit store, where new delays turn into incidents.
+ * Polls the live Hamburg Hbf board and pushes every reading into the cockpit
+ * store, where new delays turn into incidents.
  */
 export function useCorridorFeed() {
   const applyFeed = useCockpitStore((state) => state.applyFeed);

@@ -1,15 +1,15 @@
 import { Platform } from 'react-native';
 
-import { CORRIDOR_STATIONS } from './data';
+import { CORRIDOR_STATIONS, HAMBURG_HBF } from './data';
 import type { OnwardConnection, Train, TrainCategory } from './types';
 
 /**
- * Live corridor feed for Hamburg Hbf → Hannover Hbf.
+ * Live station incident feed for Hamburg Hbf.
  *
  * Two public Deutsche Bahn front ends are read until one answers:
  *
  *  - `dbf.finalrewind.org` — station board built on DB's IRIS data. One
- *    request returns arrivals *and* departures at Hannover Hbf with the full
+ *    request returns arrivals and departures at Hamburg Hbf with the full
  *    route of every service, live arrival/departure delay, platform, and the
  *    German cause texts DB publishes ("Verspätung eines vorausfahrenden
  *    Zuges"). The richest source, but it sends no CORS header.
@@ -30,17 +30,16 @@ import type { OnwardConnection, Train, TrainCategory } from './types';
  * of day and are labelled as estimates in the UI.
  */
 
-const IRIS_URL = 'https://dbf.finalrewind.org/Hannover%20Hbf.json?version=3';
-const DB_REST_BASE = 'https://v6.db.transport.rest/stops/8000152';
-const HAMBURG_DB_REST_BASE = 'https://v6.db.transport.rest/stops/8002549';
+const IRIS_URL = `https://dbf.finalrewind.org/${HAMBURG_HBF.irisSlug}.json?version=3`;
+const DB_REST_BASE = `https://v6.db.transport.rest/stops/${HAMBURG_HBF.dbStopId}`;
 const REQUEST_TIMEOUT_MS = 12_000;
 
 /** Board window: services arriving from this far back to this far ahead. */
 const WINDOW_BEHIND_MIN = 12;
 const WINDOW_AHEAD_MIN = 95;
-/** Services shown on the corridor at once. */
+/** Services evaluated for station incidents at once. */
 const MAX_TRAINS = 8;
-/** Transfer at Hannover is only interesting inside this window. */
+/** Transfers at Hamburg Hbf are only relevant inside this window. */
 const MIN_TRANSFER_BUFFER_MIN = 4;
 const MAX_TRANSFER_BUFFER_MIN = 28;
 const MAX_CONNECTIONS_PER_TRAIN = 2;
@@ -66,7 +65,7 @@ export interface CorridorSnapshot {
   fetchedAt: number;
   /** Board time in Berlin minutes since midnight. */
   boardMinutes: number;
-  /** Services on the Hannover board before the corridor filter. */
+  /** Services on the Hamburg Hbf board before the corridor filter. */
   boardSize: number;
 }
 
@@ -139,7 +138,7 @@ const CORRIDOR_POINTS: CorridorPoint[] = [
 /** The other lines into Hannover — a route through these is not our corridor. */
 const OFF_CORRIDOR = /bremen|rotenburg|nienburg|verden|buchholz|tostedt|hittfeld|sagehorn/i;
 
-const isHannover = (name: string) => /^hannover\s+hbf/i.test(name.trim());
+const isHamburgHbf = (name: string) => /^hamburg\s+hbf/i.test(name.trim());
 
 function corridorPoint(name: string) {
   const clean = name.trim();
@@ -324,11 +323,11 @@ interface BoardEntry {
   destination: string;
   /** Full route as station names, in running order. */
   route: string[];
-  /** Stops still to come after Hannover Hbf. */
+  /** Stops still to come after Hamburg Hbf. */
   onward: string[];
-  /** Scheduled arrival at Hannover Hbf, Berlin minutes since midnight. */
+  /** Scheduled arrival at Hamburg Hbf, Berlin minutes since midnight. */
   arrivalMin?: number;
-  /** Scheduled departure from Hannover Hbf. */
+  /** Scheduled departure from Hamburg Hbf. */
   departureMin?: number;
   arrivalDelayMin: number;
   departureDelayMin: number;
@@ -437,8 +436,8 @@ function mapIrisEntry(raw: unknown, boardMinutes: number): BoardEntry | undefine
 
   const route = stationNames(item.route);
   const via = stationNames(item.via);
-  const hannoverIndex = route.findIndex(isHannover);
-  const onward = hannoverIndex >= 0 ? route.slice(hannoverIndex + 1) : via;
+  const stationIndex = route.findIndex(isHamburgHbf);
+  const onward = stationIndex >= 0 ? route.slice(stationIndex + 1) : via;
 
   const messages = asRecord(item.messages);
   const causes = asArray(messages.delay)
@@ -456,8 +455,8 @@ function mapIrisEntry(raw: unknown, boardMinutes: number): BoardEntry | undefine
       stationNames(item.trainClasses).length > 0 ? stationNames(item.trainClasses) : [],
     ),
     origin: route[0] ?? 'Unknown',
-    destination: asText(item.destination) ?? 'Hannover Hbf',
-    route: hannoverIndex >= 0 ? route.slice(0, hannoverIndex) : route,
+    destination: asText(item.destination) ?? HAMBURG_HBF.name,
+    route: stationIndex >= 0 ? route.slice(0, stationIndex) : route,
     onward,
     arrivalMin,
     departureMin,
@@ -510,7 +509,7 @@ function mapDbRestEntry(raw: unknown, boardMinutes: number, kind: 'arrival' | 'd
     label,
     category: resolveCategory(label, []),
     origin: asText(item.provenance) ?? previous[0] ?? 'Unknown',
-    destination: asText(item.direction) ?? 'Hannover Hbf',
+    destination: asText(item.direction) ?? HAMBURG_HBF.name,
     route: previous,
     onward: next,
     arrivalDelayMin: kind === 'arrival' ? delayMin : 0,
@@ -560,7 +559,7 @@ export interface HamburgPlatformAssignment {
 export async function fetchHamburgPlatformAssignments(): Promise<HamburgPlatformAssignment[]> {
   const boardMinutes = berlinMinutesSinceMidnight();
   const query = `duration=${WINDOW_AHEAD_MIN}&results=80&language=en&stopovers=true`;
-  const payload = await getJson(`${HAMBURG_DB_REST_BASE}/departures?${query}`);
+  const payload = await getJson(`${DB_REST_BASE}/departures?${query}`);
   const entries = asArray(asRecord(payload).departures)
     .map((raw) => mapDbRestEntry(raw, boardMinutes, 'departure'))
     .filter((entry): entry is BoardEntry => entry !== undefined)
@@ -611,7 +610,7 @@ function buildConnections(
   const candidates = pool
     .filter((entry) => entry.key !== feeder.key && entry.label !== feeder.label)
     .filter((entry) => entry.departureMin !== undefined && entry.platform !== undefined)
-    .filter((entry) => !entry.cancelled && !isHannover(entry.destination))
+    .filter((entry) => !entry.cancelled && !isHamburgHbf(entry.destination))
     .map((entry) => ({ entry, buffer: (entry.departureMin ?? 0) - arrivalMin }))
     .filter(
       (item) => item.buffer >= MIN_TRANSFER_BUFFER_MIN && item.buffer <= MAX_TRANSFER_BUFFER_MIN,
@@ -671,13 +670,12 @@ function buildSnapshot(
         (entry.arrivalMin ?? 0) <= boardMinutes + WINDOW_AHEAD_MIN,
     )
     .map((entry) => ({ entry, point: corridorEntry(entry) }))
-    .filter((item) => item.point !== undefined)
     .sort((a, b) => (a.entry.arrivalMin ?? 0) - (b.entry.arrivalMin ?? 0))
     .slice(0, MAX_TRAINS);
 
   const trains: Train[] = feeders.map(({ entry, point }) => {
     const arrivalMin = entry.arrivalMin ?? boardMinutes;
-    const fromOffset = point?.offset ?? 0;
+    const fromOffset = point?.offset ?? 0.85;
     const { onboard, boarding } = modelLoad(entry.label, entry.category, arrivalMin);
     // Booked run time from the corridor entry point, scaled by how much of the
     // line the service still has to cover.
@@ -693,7 +691,7 @@ function buildSnapshot(
       id: entry.key,
       service: entry.label,
       category: entry.category,
-      origin: point?.name ?? entry.origin,
+      origin: entry.origin,
       destination: entry.destination,
       platform: entry.platform ?? 0,
       scheduledDeparture: arrivalMin - runtime,
@@ -742,8 +740,8 @@ const WEB_BLOCK_HINT =
   'Browsers only accept a DB host that sends CORS headers; open the app on a phone in Expo Go for the full feed.';
 
 /**
- * Read the live Hannover Hbf board and return the corridor state.
- * The first source that yields corridor services wins.
+ * Read the live Hamburg Hbf board and return station incident candidates.
+ * The first source that yields eligible arrivals wins.
  */
 export async function fetchCorridorSnapshot(): Promise<CorridorSnapshot> {
   const boardMinutes = berlinMinutesSinceMidnight();
@@ -767,7 +765,7 @@ export async function fetchCorridorSnapshot(): Promise<CorridorSnapshot> {
       const snapshot = buildSnapshot(entries, source, boardMinutes);
       if (snapshot.trains.length > 0) return snapshot;
       emptySnapshot ??= snapshot;
-      problems.push(`${source.label}: no Hamburg corridor service on the board`);
+      problems.push(`${source.label}: no eligible Hamburg Hbf arrival on the board`);
     } catch (error) {
       problems.push(describeError(candidate, error));
     }

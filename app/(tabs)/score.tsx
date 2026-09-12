@@ -94,9 +94,8 @@ export default function ScoreScreen() {
           <View className="gap-2">
             <Typography type="body-sm" color="muted">
               For every incident the engine also models doing nothing. The difference between that
-              baseline and the plan that was applied is what lands here: delay minutes across the
-              corridor, passengers whose journey stayed intact, and transfers at Hannover Hbf that
-              survived.
+              baseline and the plan that was applied is what lands here: delay minutes at Hamburg
+              Hbf, passengers whose journey stayed intact, and transfers there that survived.
             </Typography>
             <Typography type="body-sm" color="muted">
               The arbiter treats one broken connection as roughly eight minutes of network delay,

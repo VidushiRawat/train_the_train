@@ -39,7 +39,7 @@ export function FeedStatusPanel() {
       hint={
         isError
           ? 'No live board — the cockpit is holding the last state it had'
-          : `Deutsche Bahn board at Hannover Hbf · re-read every ${Math.round(FEED_INTERVAL_MS / 1000)} s`
+          : `Deutsche Bahn board at Hamburg Hbf · re-read every ${Math.round(FEED_INTERVAL_MS / 1000)} s`
       }
       right={
         <Button size="sm" variant="ghost" onPress={refresh} isDisabled={isFetching}>
@@ -76,7 +76,7 @@ export function FeedStatusPanel() {
           <Typography type="body-xs" color="muted">
             Read {readAt}
             {ageSeconds !== undefined ? ` · ${ageSeconds} s ago` : ''} · {feed.boardSize ?? 0}{' '}
-            arrivals on the board, {trainCount} on this corridor
+            arrivals on the board, {trainCount} eligible at Hamburg Hbf
           </Typography>
         )}
 

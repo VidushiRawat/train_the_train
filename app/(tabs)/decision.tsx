@@ -64,7 +64,7 @@ export default function DecisionScreen() {
                     +{pending.delayMin} min
                   </Typography>
                   <Typography type="body-xs" color="muted">
-                    Platform {pending.platform} at Hannover Hbf
+                    Platform {pending.platform} at Hamburg Hbf
                   </Typography>
                 </View>
               </View>
@@ -136,13 +136,13 @@ export default function DecisionScreen() {
             <Panel title="Standing by" hint="Minor incidents never reach this screen">
               <View className="gap-3">
                 <Typography type="body-sm">
-                  Nothing on the live board needs a call right now. The Hannover Hbf feed is re-read
-                  every 45 seconds; as soon as a Hamburg-corridor service is reported 3 minutes or
+                  Nothing on the live board needs a call right now. The Hamburg Hbf feed is re-read
+                  every 45 seconds; as soon as a service at Hamburg Hbf is reported 3 minutes or
                   more down, both agents run. Anything under 8 minutes with no connection at risk is
                   applied on the spot — bigger events land here with both plans side by side.
                 </Typography>
                 <Button variant="secondary" onPress={() => router.push('/')}>
-                  <Button.Label>Back to corridor</Button.Label>
+                  <Button.Label>Back to Hamburg overview</Button.Label>
                 </Button>
               </View>
             </Panel>

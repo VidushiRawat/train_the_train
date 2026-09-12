@@ -18,13 +18,13 @@ export interface CorridorStation {
   offset: number;
 }
 
-/** Onward service a train feeds at Hannover Hbf. */
+/** Onward service a train feeds at the monitored station. */
 export interface OnwardConnection {
   id: string;
   service: string;
   category: TrainCategory;
   destination: string;
-  /** Departure platform at Hannover Hbf. */
+  /** Departure platform at the monitored station. */
   platform: number;
   /** Minutes since midnight. */
   scheduledDeparture: number;
@@ -44,11 +44,11 @@ export interface Train {
   category: TrainCategory;
   origin: string;
   destination: string;
-  /** Booked arrival platform at Hannover Hbf. */
+  /** Booked platform at the monitored station. */
   platform: number;
   /** Minutes since midnight, departure from its origin on the corridor. */
   scheduledDeparture: number;
-  /** Minutes since midnight, booked arrival at Hannover Hbf. */
+  /** Minutes since midnight, booked time at the monitored station. */
   scheduledArrival: number;
   /** Corridor offset of the origin, 0..1. */
   fromOffset: number;
@@ -119,7 +119,7 @@ export interface KnockOnEffect {
 /** Machine-readable consequences of a plan, applied to the twin on decision. */
 export interface PlanEffects {
   primaryDelayMin: number;
-  /** Set when the plan re-platforms the delayed train at Hannover Hbf. */
+  /** Set when the plan re-platforms the delayed train at the monitored station. */
   reroutePlatform?: number;
   knockOn: KnockOnEffect[];
   heldConnections: HeldConnection[];
