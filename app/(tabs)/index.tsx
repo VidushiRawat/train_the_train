@@ -133,7 +133,7 @@ export default function CorridorScreen() {
 
         {trains.length > 0 ? (
           <>
-            <TrainMovementMap trains={trains} nowMinutes={nowMinutes} />
+            <TrainMovementMap trains={trains} nowSeconds={nowSeconds} />
             <CorridorPanel
               trains={trains}
               nowMinutes={nowMinutes}

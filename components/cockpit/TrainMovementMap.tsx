@@ -1,220 +1,225 @@
+import { useQuery } from '@tanstack/react-query';
 import { Typography, useThemeColor } from 'heroui-native';
-import { ArrowDownRight, ArrowUpRight, TrainFront } from 'lucide-react-native';
+import { ArrowDownRight, ArrowUpRight, CircleStop, Clock3, TrainFront } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
-import MapView, { type LatLng, type MapMarker, type MapPolyline } from '@/components/MapView';
-import { trainPosition } from '@/lib/agents';
-import { CORRIDOR_STATIONS } from '@/lib/data';
-import type { Train } from '@/lib/types';
-import { formatDelay, formatTimeOfDay } from '@/lib/utils';
+import { CategoryBadge, StatusPill } from '@/components/cockpit/badges';
+import { fetchHamburgPlatformAssignments, type HamburgPlatformAssignment } from '@/lib/db-api';
+import type { Train, TrainStatus } from '@/lib/types';
+import { cn, formatTimeOfDay } from '@/lib/utils';
 
 import { Panel } from './Panel';
 
-interface TrainMovementMapProps {
-  trains: Train[];
-  nowMinutes: number;
+type PlatformMovement = 'approaching' | 'at-platform' | 'departed' | 'cancelled';
+
+interface PlatformTrain extends HamburgPlatformAssignment {
+  movement: PlatformMovement;
+  effectiveDeparture: number;
+  status: TrainStatus;
 }
 
-interface GeoStation {
-  offset: number;
-  coordinate: LatLng;
-}
+const HAMBURG_PLATFORMS = Array.from({ length: 10 }, (_, index) => index + 5);
 
-const GEO_STATIONS: GeoStation[] = [
-  { offset: 0, coordinate: { latitude: 53.5526, longitude: 10.0067 } },
-  { offset: 0.09, coordinate: { latitude: 53.456, longitude: 9.991 } },
-  { offset: 0.26, coordinate: { latitude: 53.249, longitude: 10.419 } },
-  { offset: 0.47, coordinate: { latitude: 52.969, longitude: 10.553 } },
-  { offset: 0.76, coordinate: { latitude: 52.624, longitude: 10.063 } },
-  { offset: 1, coordinate: { latitude: 52.376, longitude: 9.741 } },
-];
-
-const HANNOVER = GEO_STATIONS[GEO_STATIONS.length - 1].coordinate;
-
-const CATEGORY_COLOR: Record<Train['category'], MapMarker['color']> = {
-  ICE: 'cyan',
-  IC: 'purple',
-  RE: 'green',
-  RB: 'blue',
+const MOVEMENT_COPY: Record<PlatformMovement, { label: string; tone: string }> = {
+  approaching: { label: 'Approaching', tone: 'text-warning' },
+  'at-platform': { label: 'At platform', tone: 'text-success' },
+  departed: { label: 'Departed', tone: 'text-muted' },
+  cancelled: { label: 'Cancelled', tone: 'text-danger' },
 };
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function interpolate(from: LatLng, to: LatLng, progress: number): LatLng {
-  return {
-    latitude: from.latitude + (to.latitude - from.latitude) * progress,
-    longitude: from.longitude + (to.longitude - from.longitude) * progress,
-  };
-}
-
-function corridorCoordinate(offset: number) {
-  const boundedOffset = clamp(offset, 0, 1);
-  const nextIndex = GEO_STATIONS.findIndex((station) => station.offset >= boundedOffset);
-  if (nextIndex <= 0) return GEO_STATIONS[0].coordinate;
-
-  const from = GEO_STATIONS[nextIndex - 1];
-  const to = GEO_STATIONS[nextIndex];
-  const progress = (boundedOffset - from.offset) / (to.offset - from.offset);
-  return interpolate(from.coordinate, to.coordinate, progress);
-}
-
-function platformCoordinate(platform: number): LatLng {
-  const lane = clamp(platform, 1, 14) - 7;
-  return {
-    latitude: HANNOVER.latitude + lane * 0.0015,
-    longitude: HANNOVER.longitude + lane * 0.001,
-  };
-}
-
-function minutesFrom(nowMinutes: number, targetMinutes: number) {
-  const difference = nowMinutes - targetMinutes;
-  if (difference > 720) return difference - 1440;
-  if (difference < -720) return difference + 1440;
+function signedMinuteDifference(target: number, now: number) {
+  let difference = target - now;
+  if (difference > 720) difference -= 1440;
+  if (difference < -720) difference += 1440;
   return difference;
 }
 
-function trainMapState(train: Train, nowMinutes: number) {
-  const position = trainPosition(train, nowMinutes);
-  const platform = train.reroutedTo ?? train.platform;
-  const platformPoint = platformCoordinate(platform);
-  const effectiveArrival = train.scheduledArrival + train.delayMin;
-  const afterArrival = minutesFrom(nowMinutes, effectiveArrival);
-  const continuesBeyondHannover = !train.destination.toLowerCase().includes('hannover');
-
-  if (train.cancelled) {
-    return {
-      coordinate: corridorCoordinate(position.offset),
-      movement: 'Cancelled before platform',
-      color: 'red' as const,
-    };
-  }
-
-  if (afterArrival < -3) {
-    const routePoint = corridorCoordinate(position.offset);
-    const approachProgress = clamp((position.offset - 0.88) / 0.12, 0, 1);
-    return {
-      coordinate: interpolate(routePoint, platformPoint, approachProgress),
-      movement: `Entering platform ${platform}`,
-      color: train.delayMin > 0 ? ('orange' as const) : CATEGORY_COLOR[train.category],
-    };
-  }
-
-  if (afterArrival <= 2 || !continuesBeyondHannover) {
-    return {
-      coordinate: platformPoint,
-      movement: `At platform ${platform}`,
-      color: train.delayMin > 0 ? ('orange' as const) : CATEGORY_COLOR[train.category],
-    };
-  }
-
-  const departureProgress = clamp((afterArrival - 2) / 8, 0, 1);
-  const departureTarget = {
-    latitude: HANNOVER.latitude - 0.105,
-    longitude: HANNOVER.longitude + (platform % 2 === 0 ? 0.115 : -0.105),
-  };
-  return {
-    coordinate: interpolate(platformPoint, departureTarget, departureProgress),
-    movement: `Leaving platform ${platform}`,
-    color: CATEGORY_COLOR[train.category],
-  };
+function movementFor(train: HamburgPlatformAssignment, nowMinutes: number): PlatformMovement {
+  if (train.cancelled) return 'cancelled';
+  const untilDeparture = signedMinuteDifference(
+    train.scheduledDeparture + train.delayMin,
+    nowMinutes,
+  );
+  if (untilDeparture > 4) return 'approaching';
+  if (untilDeparture >= -2) return 'at-platform';
+  return 'departed';
 }
 
-export function TrainMovementMap({ trains, nowMinutes }: TrainMovementMapProps) {
-  const [accent, border, muted, panel] = useThemeColor(['accent', 'border', 'muted', 'surface']);
+function MovementIcon({ movement }: { movement: PlatformMovement }) {
+  const [warning, success, muted, danger] = useThemeColor([
+    'warning',
+    'success',
+    'muted',
+    'danger',
+  ]);
+  const color =
+    movement === 'approaching'
+      ? warning
+      : movement === 'at-platform'
+        ? success
+        : movement === 'cancelled'
+          ? danger
+          : muted;
 
-  const { markers, polylines } = useMemo(() => {
-    const stationMarkers: MapMarker[] = GEO_STATIONS.map((station, index) => ({
-      id: `station-${CORRIDOR_STATIONS[index].id}`,
-      coordinate: station.coordinate,
-      color: index === GEO_STATIONS.length - 1 ? 'yellow' : 'blue',
-      opacity: 0.7,
-    }));
+  if (movement === 'approaching') return <ArrowDownRight color={color} size={17} />;
+  if (movement === 'departed') return <ArrowUpRight color={color} size={17} />;
+  if (movement === 'cancelled') return <CircleStop color={color} size={17} />;
+  return <TrainFront color={color} size={17} />;
+}
 
-    const trainMarkers: MapMarker[] = trains.map((train) => {
-      const state = trainMapState(train, nowMinutes);
-      const platform = train.reroutedTo ?? train.platform;
-      return {
-        id: `train-${train.id}`,
-        coordinate: state.coordinate,
-        color: state.color,
-        title: `${train.service} · ${state.movement}`,
-        description: `${train.origin} → ${train.destination} · ${formatDelay(train.delayMin)} · arr ${formatTimeOfDay(train.scheduledArrival + train.delayMin)} · Pl. ${platform}`,
-      };
-    });
-
-    const route: MapPolyline = {
-      id: 'hamburg-hannover-route',
-      coordinates: GEO_STATIONS.map((station) => station.coordinate),
-      strokeColor: accent,
-      strokeWidth: 4,
-    };
-
-    const platformApproaches: MapPolyline[] = trains.map((train) => ({
-      id: `platform-approach-${train.id}`,
-      coordinates: [
-        corridorCoordinate(0.965),
-        platformCoordinate(train.reroutedTo ?? train.platform),
-      ],
-      strokeColor: train.reroutedTo === undefined ? border : accent,
-      strokeWidth: train.reroutedTo === undefined ? 1 : 3,
-      lineDashPattern: train.reroutedTo === undefined ? [3, 4] : undefined,
-    }));
-
-    return {
-      markers: [...stationMarkers, ...trainMarkers],
-      polylines: [route, ...platformApproaches],
-    };
-  }, [accent, border, nowMinutes, trains]);
+function TrainAssignment({ train }: { train: PlatformTrain }) {
+  const movement = MOVEMENT_COPY[train.movement];
+  const [muted] = useThemeColor(['muted']);
 
   return (
-    <Panel
-      title="Platform movement map"
-      hint="Operational schematic · positions inferred from timetable and live delay"
-      contentClassName="p-0"
+    <View
+      className={cn(
+        'bg-surface-secondary min-w-0 flex-1 rounded-lg border px-3 py-2.5',
+        train.movement === 'at-platform' ? 'border-success/60' : 'border-border',
+        train.movement === 'cancelled' && 'border-danger/60 opacity-70',
+      )}
     >
-      <MapView
-        initialRegion={{
-          latitude: 52.98,
-          longitude: 10.08,
-          latitudeDelta: 1.55,
-          longitudeDelta: 1.45,
-        }}
-        markers={markers}
-        polylines={polylines}
-        showsBuildings={false}
-        showsCompass={false}
-        showsIndoors={false}
-        showsMyLocationButton={false}
-        showsPointsOfInterest={false}
-        showsScale={false}
-        rotateEnabled={false}
-        pitchEnabled={false}
-        style={{ height: 320, width: '100%', backgroundColor: panel }}
-      />
-      <View className="border-border bg-panel flex-row flex-wrap gap-x-4 gap-y-2 border-t px-4 py-3">
-        <View className="min-w-32 flex-1 flex-row items-center gap-2">
-          <ArrowDownRight size={14} color={accent} />
-          <Typography type="body-xs" color="muted" className="flex-1">
-            Entering Hannover platform
-          </Typography>
-        </View>
-        <View className="min-w-32 flex-1 flex-row items-center gap-2">
-          <ArrowUpRight size={14} color={muted} />
-          <Typography type="body-xs" color="muted" className="flex-1">
-            Leaving after the planned dwell
-          </Typography>
-        </View>
-        <View className="w-full flex-row items-start gap-2">
-          <TrainFront size={14} color={muted} />
-          <Typography type="body-xs" color="muted" className="flex-1">
-            Tap a train for service, platform, arrival, and delay details. Movement is estimated; DB
-            does not publish train GPS in this feed.
-          </Typography>
-        </View>
+      <View className="min-w-0 flex-row flex-wrap items-center gap-2">
+        <MovementIcon movement={train.movement} />
+        <CategoryBadge category={train.category} />
+        <Typography type="body-sm" weight="bold" className="text-foreground shrink">
+          {train.service}
+        </Typography>
+        <Typography type="body-xs" weight="semibold" className={movement.tone}>
+          {movement.label}
+        </Typography>
       </View>
+
+      <View className="mt-2 min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1">
+        <View className="flex-row items-center gap-1.5">
+          <Clock3 color={muted} size={13} />
+          <Typography type="body-xs" className="text-muted">
+            {formatTimeOfDay(train.effectiveDeparture)} estimated departure
+          </Typography>
+        </View>
+        <StatusPill status={train.status} />
+      </View>
+
+      <Typography type="body-xs" className="text-muted mt-1.5">
+        Hamburg Hbf → {train.destination}
+        {train.delayMin > 0 ? ` · +${train.delayMin} min` : ' · on time'}
+      </Typography>
+    </View>
+  );
+}
+
+function PlatformLane({ platform, trains }: { platform: number; trains: PlatformTrain[] }) {
+  return (
+    <View className="border-border/70 min-w-0 flex-row gap-3 border-b py-3 last:border-b-0">
+      <View className="bg-surface-secondary w-14 shrink-0 items-center justify-center rounded-lg py-2">
+        <Typography type="body-xs" weight="semibold" className="text-muted">
+          TRACK
+        </Typography>
+        <Typography type="h4" weight="bold" className="text-foreground">
+          {platform}
+        </Typography>
+      </View>
+
+      <View className="relative min-w-0 flex-1 justify-center">
+        <View className="bg-border absolute top-1/2 right-0 left-0 h-0.5" />
+        {trains.length > 0 ? (
+          <View className="gap-2">
+            {trains.map((train) => (
+              <TrainAssignment key={train.id} train={train} />
+            ))}
+          </View>
+        ) : (
+          <View className="bg-surface self-start rounded-md px-2.5 py-1.5">
+            <Typography type="body-xs" className="text-muted">
+              No corridor service assigned
+            </Typography>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+export function TrainMovementMap({ nowSeconds }: { trains: Train[]; nowSeconds: number }) {
+  const nowMinutes = Math.floor(nowSeconds / 60);
+  const query = useQuery({
+    queryKey: ['corridor-board', 'hamburg-platforms'],
+    queryFn: fetchHamburgPlatformAssignments,
+    refetchInterval: 45_000,
+    staleTime: 20_000,
+    retry: 1,
+  });
+
+  const platformTrains = useMemo(
+    () =>
+      (query.data ?? []).map<PlatformTrain>((train) => {
+        const movement = movementFor(train, nowMinutes);
+        return {
+          ...train,
+          effectiveDeparture: train.scheduledDeparture + train.delayMin,
+          movement,
+          status: train.cancelled ? 'cancelled' : train.delayMin > 0 ? 'delayed' : 'on-time',
+        };
+      }),
+    [query.data, nowMinutes],
+  );
+
+  const platforms = useMemo(() => {
+    const visible = new Set(HAMBURG_PLATFORMS);
+    for (const train of platformTrains) visible.add(train.platform);
+    return [...visible].sort((a, b) => a - b);
+  }, [platformTrains]);
+
+  return (
+    <Panel title="Hamburg Hbf platform view" hint="Live track-specific operating schematic">
+      <View className="border-border bg-surface-secondary mb-3 flex-row flex-wrap gap-x-4 gap-y-2 rounded-lg border px-3 py-2.5">
+        {(['approaching', 'at-platform', 'departed', 'cancelled'] as const).map((movement) => (
+          <View key={movement} className="flex-row items-center gap-1.5">
+            <MovementIcon movement={movement} />
+            <Typography type="body-xs" className={MOVEMENT_COPY[movement].tone}>
+              {MOVEMENT_COPY[movement].label}
+            </Typography>
+          </View>
+        ))}
+      </View>
+
+      {query.isError ? (
+        <View className="border-danger/50 bg-danger/10 mb-3 rounded-lg border px-3 py-2.5">
+          <Typography type="body-sm" weight="semibold" className="text-danger">
+            Hamburg platform board unavailable
+          </Typography>
+          <Typography type="body-xs" className="text-muted mt-1">
+            The direct public feed may be blocked in this browser. Use Refresh to try again.
+          </Typography>
+        </View>
+      ) : null}
+
+      {query.isPending ? (
+        <Typography type="body-sm" className="text-muted py-5 text-center">
+          Loading Hamburg Hbf platform assignments…
+        </Typography>
+      ) : (
+        <ScrollView
+          className="max-h-[620px]"
+          contentContainerClassName="pb-1"
+          nestedScrollEnabled
+          showsVerticalScrollIndicator
+        >
+          {platforms.map((platform) => (
+            <PlatformLane
+              key={platform}
+              platform={platform}
+              trains={platformTrains.filter((train) => train.platform === platform)}
+            />
+          ))}
+        </ScrollView>
+      )}
+
+      <Typography type="body-xs" className="text-muted mt-3">
+        Services and track assignments come from the live Hamburg Hbf departure board. Movement
+        states are inferred from scheduled and reported departure times; no train GPS is available.
+      </Typography>
     </Panel>
   );
 }

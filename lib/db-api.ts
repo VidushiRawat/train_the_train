@@ -32,6 +32,7 @@ import type { OnwardConnection, Train, TrainCategory } from './types';
 
 const IRIS_URL = 'https://dbf.finalrewind.org/Hannover%20Hbf.json?version=3';
 const DB_REST_BASE = 'https://v6.db.transport.rest/stops/8000152';
+const HAMBURG_DB_REST_BASE = 'https://v6.db.transport.rest/stops/8002549';
 const REQUEST_TIMEOUT_MS = 12_000;
 
 /** Board window: services arriving from this far back to this far ahead. */
@@ -541,6 +542,48 @@ async function fetchDbRest(boardMinutes: number): Promise<BoardResult> {
 
   if (arrivals.length === 0) throw new Error('board empty');
   return { entries: [...arrivals, ...departures], source: SOURCE_DB_REST };
+}
+
+export interface HamburgPlatformAssignment {
+  id: string;
+  service: string;
+  category: Train['category'];
+  platform: number;
+  scheduledDeparture: number;
+  delayMin: number;
+  cancelled: boolean;
+  destination: string;
+  hasRealtime: boolean;
+}
+
+/** Live Hamburg Hbf departures that continue south along the Hannover corridor. */
+export async function fetchHamburgPlatformAssignments(): Promise<HamburgPlatformAssignment[]> {
+  const boardMinutes = berlinMinutesSinceMidnight();
+  const query = `duration=${WINDOW_AHEAD_MIN}&results=80&language=en&stopovers=true`;
+  const payload = await getJson(`${HAMBURG_DB_REST_BASE}/departures?${query}`);
+  const entries = asArray(asRecord(payload).departures)
+    .map((raw) => mapDbRestEntry(raw, boardMinutes, 'departure'))
+    .filter((entry): entry is BoardEntry => entry !== undefined)
+    .filter((entry) => entry.platform !== undefined && entry.departureMin !== undefined)
+    .filter((entry) =>
+      [entry.destination, ...entry.onward].some((name) => {
+        const point = corridorPoint(name);
+        return point !== undefined && point.offset > 0;
+      }),
+    )
+    .sort((a, b) => (a.departureMin ?? 0) - (b.departureMin ?? 0));
+
+  return entries.map((entry) => ({
+    id: entry.key,
+    service: entry.label,
+    category: entry.category,
+    platform: entry.platform ?? 0,
+    scheduledDeparture: entry.departureMin ?? boardMinutes,
+    delayMin: entry.departureDelayMin,
+    cancelled: entry.cancelled,
+    destination: entry.destination,
+    hasRealtime: entry.hasRealtime,
+  }));
 }
 
 /* -------------------------------------------------------------------------- */
