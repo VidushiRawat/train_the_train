@@ -10,12 +10,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'Your App Name',
-    slug: 'your-app-slug',
+    name: 'RailMind',
+    slug: 'railmind',
     version: process.env.BILT_APP_VERSION ?? '1.0.0',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
-    scheme: 'yourapp',
+    scheme: 'railmind',
     runtimeVersion: {
       policy: 'appVersion',
     },
@@ -25,10 +25,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ITSAppUsesNonExemptEncryption: false,
       },
       supportsTablet: true,
-      bundleIdentifier: process.env.BILT_IOS_BUNDLE_ID ?? 'com.yourcompany.yourapp',
+      bundleIdentifier: process.env.BILT_IOS_BUNDLE_ID ?? 'me.bilt.railmind',
     },
     android: {
-      package: process.env.BILT_ANDROID_PACKAGE ?? 'com.yourcompany.yourapp',
+      package: process.env.BILT_ANDROID_PACKAGE ?? 'me.bilt.railmind',
     },
     web: {
       bundler: 'metro',
