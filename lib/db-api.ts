@@ -1,19 +1,24 @@
+import { Platform } from 'react-native';
+
 import { CORRIDOR_STATIONS } from './data';
 import type { OnwardConnection, Train, TrainCategory } from './types';
 
 /**
  * Live corridor feed for Hamburg Hbf → Hannover Hbf.
  *
- * Two public Deutsche Bahn front ends are read, in order, until one answers:
+ * Two public Deutsche Bahn front ends are read until one answers:
  *
- *  1. `dbf.finalrewind.org` — station board built on DB's IRIS data. One
- *     request returns arrivals *and* departures at Hannover Hbf with the full
- *     route of every service, live arrival/departure delay, platform, and the
- *     German cause texts DB publishes ("Verspätung eines vorausfahrenden
- *     Zuges"). Richest source, so it is tried first.
- *  2. `v6.db.transport.rest` — REST wrapper on DB's own journey API. Thinner
- *     data, but it sends CORS headers, so it can answer in a browser when the
- *     first host refuses.
+ *  - `dbf.finalrewind.org` — station board built on DB's IRIS data. One
+ *    request returns arrivals *and* departures at Hannover Hbf with the full
+ *    route of every service, live arrival/departure delay, platform, and the
+ *    German cause texts DB publishes ("Verspätung eines vorausfahrenden
+ *    Zuges"). The richest source, but it sends no CORS header.
+ *  - `v6.db.transport.rest` — REST wrapper on DB's own journey API. Thinner
+ *    data, but it does send CORS headers.
+ *
+ * Order therefore depends on the platform: a browser tries the CORS-capable
+ * host first, native (Expo Go, device builds) tries the richer one first,
+ * since fetch there is not subject to CORS at all.
  *
  * Both are normalised into the same {@link BoardEntry} shape and then folded
  * into the cockpit's `Train` model.
@@ -46,6 +51,12 @@ export interface FeedSource {
 
 const SOURCE_IRIS: FeedSource = { id: 'iris', label: 'DB IRIS station board' };
 const SOURCE_DB_REST: FeedSource = { id: 'db-rest', label: 'DB REST (v6)' };
+
+/** One source's answer: normalised board rows plus which host produced them. */
+interface BoardResult {
+  entries: BoardEntry[];
+  source: FeedSource;
+}
 
 export interface CorridorSnapshot {
   trains: Train[];
@@ -458,7 +469,7 @@ function mapIrisEntry(raw: unknown, boardMinutes: number): BoardEntry | undefine
   };
 }
 
-async function fetchIris(boardMinutes: number) {
+async function fetchIris(boardMinutes: number): Promise<BoardResult> {
   const payload = asRecord(await getJson(IRIS_URL));
   const list = asArray(payload.departures);
   if (list.length === 0) throw new Error('board empty');
@@ -514,7 +525,7 @@ function mapDbRestEntry(raw: unknown, boardMinutes: number, kind: 'arrival' | 'd
   return entry;
 }
 
-async function fetchDbRest(boardMinutes: number) {
+async function fetchDbRest(boardMinutes: number): Promise<BoardResult> {
   const query = `duration=${WINDOW_AHEAD_MIN}&results=60&language=en`;
   const [arrivalsPayload, departuresPayload] = await Promise.all([
     getJson(`${DB_REST_BASE}/arrivals?${query}&stopovers=true&remarks=true`),
@@ -675,22 +686,39 @@ function buildSnapshot(
 function describeError(source: FeedSource, error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   if (/failed to fetch|network request failed|load failed/i.test(message)) {
-    return `${source.label} unreachable from this device`;
+    return Platform.OS === 'web'
+      ? `${source.label} refused the browser (blocked or offline)`
+      : `${source.label} unreachable from this device`;
   }
   if (/abort/i.test(message)) return `${source.label} timed out`;
   return `${source.label}: ${message}`;
 }
 
+/** Hint appended when every source failed, tailored to where the app runs. */
+const WEB_BLOCK_HINT =
+  'Browsers only accept a DB host that sends CORS headers; open the app on a phone in Expo Go for the full feed.';
+
 /**
  * Read the live Hannover Hbf board and return the corridor state.
- * Sources are tried in order; the first one that yields corridor services wins.
+ * The first source that yields corridor services wins.
  */
 export async function fetchCorridorSnapshot(): Promise<CorridorSnapshot> {
   const boardMinutes = berlinMinutesSinceMidnight();
   const problems: string[] = [];
   let emptySnapshot: CorridorSnapshot | undefined;
 
-  for (const load of [fetchIris, fetchDbRest]) {
+  const loaders: [FeedSource, (minutes: number) => Promise<BoardResult>][] =
+    Platform.OS === 'web'
+      ? [
+          [SOURCE_DB_REST, fetchDbRest],
+          [SOURCE_IRIS, fetchIris],
+        ]
+      : [
+          [SOURCE_IRIS, fetchIris],
+          [SOURCE_DB_REST, fetchDbRest],
+        ];
+
+  for (const [candidate, load] of loaders) {
     try {
       const { entries, source } = await load(boardMinutes);
       const snapshot = buildSnapshot(entries, source, boardMinutes);
@@ -698,10 +726,11 @@ export async function fetchCorridorSnapshot(): Promise<CorridorSnapshot> {
       emptySnapshot ??= snapshot;
       problems.push(`${source.label}: no Hamburg corridor service on the board`);
     } catch (error) {
-      problems.push(describeError(load === fetchIris ? SOURCE_IRIS : SOURCE_DB_REST, error));
+      problems.push(describeError(candidate, error));
     }
   }
 
   if (emptySnapshot) return emptySnapshot;
-  throw new Error(problems.join(' · '));
+  const detail = problems.join(' · ');
+  throw new Error(Platform.OS === 'web' ? `${detail}. ${WEB_BLOCK_HINT}` : detail);
 }
