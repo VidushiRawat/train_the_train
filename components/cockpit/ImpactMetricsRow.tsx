@@ -61,10 +61,10 @@ export function ImpactMetricsRow({ metrics, baseline, className }: ImpactMetrics
   ];
 
   return (
-    <View className={cn('flex-row gap-2', className)}>
+    <View className={cn('flex-row flex-wrap gap-2', className)}>
       {cells.map((cell) => (
-        <View key={cell.label} className="bg-panel-raised flex-1 rounded-xl px-2.5 py-2">
-          <Typography type="body-xs" color="muted" numberOfLines={2}>
+        <View key={cell.label} className="bg-panel-raised min-w-32 flex-1 rounded-xl px-2.5 py-2">
+          <Typography type="body-xs" color="muted">
             {cell.label}
           </Typography>
           <Typography type="body" weight="semibold" className="mt-0.5">
@@ -73,8 +73,8 @@ export function ImpactMetricsRow({ metrics, baseline, className }: ImpactMetrics
           {cell.saved !== undefined && <Delta saved={cell.saved} unit={cell.savedUnit ?? ''} />}
         </View>
       ))}
-      <View className="bg-panel-raised flex-1 rounded-xl px-2.5 py-2">
-        <Typography type="body-xs" color="muted" numberOfLines={2}>
+      <View className="bg-panel-raised min-w-32 flex-1 rounded-xl px-2.5 py-2">
+        <Typography type="body-xs" color="muted">
           Trains touched
         </Typography>
         <Typography type="body" weight="semibold" className="mt-0.5">

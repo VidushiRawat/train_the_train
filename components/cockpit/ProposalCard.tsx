@@ -47,9 +47,9 @@ export function ProposalCard({
         isSelected ? 'border-accent bg-panel-raised' : 'border-border',
       )}
     >
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row flex-wrap items-center gap-2">
         <OptionBadge id={proposal.id} author={proposal.author} />
-        <View className="flex-1">
+        <View className="min-w-40 flex-1">
           <Typography type="body-sm" weight="semibold">
             {AUTHOR_LABEL[proposal.author]}
           </Typography>

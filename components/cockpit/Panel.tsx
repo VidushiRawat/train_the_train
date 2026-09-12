@@ -19,8 +19,8 @@ export function Panel({ title, hint, right, children, className, contentClassNam
   return (
     <View className={cn('border-border bg-panel overflow-hidden rounded-2xl border', className)}>
       {(title || right) && (
-        <View className="border-border flex-row items-center justify-between gap-3 border-b px-4 py-3">
-          <View className="flex-1">
+        <View className="border-border flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-4 py-3">
+          <View className="min-w-48 flex-1">
             {title && (
               <Typography type="body-xs" weight="semibold" className="text-muted tracking-[2px]">
                 {title.toUpperCase()}

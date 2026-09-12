@@ -45,12 +45,11 @@ export function TrainRow({ train, nowMinutes, isFocused }: TrainRowProps) {
           : 'gap-2 px-3 py-3'
       }
     >
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row flex-wrap items-center gap-x-2 gap-y-1">
         <CategoryBadge category={train.category} />
-        <Typography type="body" weight="semibold">
+        <Typography type="body" weight="semibold" className="min-w-20 flex-1">
           {train.service}
         </Typography>
-        <View className="flex-1" />
         <Typography
           type="body-sm"
           weight="semibold"
@@ -61,7 +60,7 @@ export function TrainRow({ train, nowMinutes, isFocused }: TrainRowProps) {
         <StatusPill status={train.status} />
       </View>
 
-      <Typography type="body-xs" color="muted" numberOfLines={1}>
+      <Typography type="body-xs" color="muted">
         {train.origin} → {train.destination} · {train.passengersOnboard} on board ·{' '}
         {train.passengersBoarding} boarding
       </Typography>
@@ -82,7 +81,7 @@ export function TrainRow({ train, nowMinutes, isFocused }: TrainRowProps) {
         />
       </View>
 
-      <View className="flex-row items-center gap-3">
+      <View className="flex-row flex-wrap items-center gap-x-3 gap-y-1">
         <View className="border-border rounded-md border px-1.5 py-0.5">
           <Typography type="body-xs" weight="semibold">
             Pl. {platform}

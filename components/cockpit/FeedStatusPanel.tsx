@@ -49,18 +49,20 @@ export function FeedStatusPanel() {
       }
     >
       <View className="gap-2">
-        <View className="flex-row items-center gap-2">
-          {isError ? (
-            <WifiOff size={14} color={danger} />
-          ) : (
-            <Radio size={14} color={feed.status === 'live' ? success : muted} />
-          )}
+        <View className="flex-row items-start gap-2">
+          <View className="mt-0.5 shrink-0">
+            {isError ? (
+              <WifiOff size={14} color={danger} />
+            ) : (
+              <Radio size={14} color={feed.status === 'live' ? success : muted} />
+            )}
+          </View>
           <Typography
             type="body-sm"
             weight="semibold"
-            className={
-              isError ? 'text-danger' : feed.status === 'live' ? 'text-success' : undefined
-            }
+            className={`flex-1 ${
+              isError ? 'text-danger' : feed.status === 'live' ? 'text-success' : ''
+            }`}
           >
             {isError
               ? 'Feed unreachable'

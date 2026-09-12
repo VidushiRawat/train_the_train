@@ -41,16 +41,16 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
         </Typography>
       </View>
 
-      <View className="flex-row items-end justify-between gap-3">
-        <View className="flex-1">
+      <View className="flex-row flex-wrap items-end justify-between gap-x-3 gap-y-2">
+        <View className="min-w-48 flex-1">
           <Typography type="h4" weight="semibold">
             {title}
           </Typography>
-          <Typography type="body-xs" color="muted" numberOfLines={1}>
+          <Typography type="body-xs" color="muted">
             {subtitle}
           </Typography>
         </View>
-        <View className="items-end">
+        <View className="shrink-0 items-end">
           <Typography type="body" weight="semibold">
             {formatClock(nowSeconds)}
           </Typography>

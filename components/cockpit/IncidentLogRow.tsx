@@ -13,15 +13,14 @@ export function IncidentLogRow({ incident }: { incident: Incident }) {
 
   return (
     <View className="border-border bg-panel gap-2 rounded-2xl border p-3">
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row flex-wrap items-center gap-x-2 gap-y-1">
         <Typography type="body-sm" weight="semibold" className="text-muted">
           {formatTimeOfDay(incident.detectedAt)}
         </Typography>
         <CategoryBadge category={incident.trainCategory} />
-        <Typography type="body-sm" weight="semibold">
+        <Typography type="body-sm" weight="semibold" className="min-w-20 flex-1">
           {incident.trainService}
         </Typography>
-        <View className="flex-1" />
         {resolution && <ModeBadge mode={resolution.mode} />}
       </View>
 

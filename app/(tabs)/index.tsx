@@ -8,6 +8,7 @@ import { CorridorPanel } from '@/components/cockpit/CorridorPanel';
 import { FeedStatusPanel } from '@/components/cockpit/FeedStatusPanel';
 import { Panel } from '@/components/cockpit/Panel';
 import { StatTile } from '@/components/cockpit/StatTile';
+import { TrainMovementMap } from '@/components/cockpit/TrainMovementMap';
 import { connectionsAtRisk } from '@/lib/agents';
 import { useCockpitStore } from '@/lib/store';
 import { formatCount, formatTimeOfDay } from '@/lib/utils';
@@ -131,11 +132,14 @@ export default function CorridorScreen() {
         )}
 
         {trains.length > 0 ? (
-          <CorridorPanel
-            trains={trains}
-            nowMinutes={nowMinutes}
-            focusedTrainId={pending?.trainId}
-          />
+          <>
+            <TrainMovementMap trains={trains} nowMinutes={nowMinutes} />
+            <CorridorPanel
+              trains={trains}
+              nowMinutes={nowMinutes}
+              focusedTrainId={pending?.trainId}
+            />
+          </>
         ) : (
           <Panel title="Corridor Hamburg Hbf → Hannover Hbf" hint="Nothing inbound right now">
             <Typography type="body-sm" color="muted">
