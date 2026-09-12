@@ -425,14 +425,20 @@ function resolveCategory(label: string, classes: string[]): TrainCategory {
 
 const slug = (value: string) => value.replace(/[^a-z0-9]+/gi, '').toLowerCase();
 
+/** Remove redundant DB mode prefixes: "S S3" → "S3", "R RB81" → "RB81". */
+function normalizeServiceLabel(value: string): string {
+  return value.replace(/^S\s+S(?=\s*\d)/i, 'S').replace(/^R\s+RB(?=\s*\d)/i, 'RB');
+}
+
 /* -------------------------------------------------------------------------- */
 /* Source 1 — IRIS station board (dbf.finalrewind.org)                         */
 /* -------------------------------------------------------------------------- */
 
 function mapIrisEntry(raw: unknown, boardMinutes: number): BoardEntry | undefined {
   const item = asRecord(raw);
-  const label = asText(item.train) ?? asText(item.trainNumber);
-  if (!label) return undefined;
+  const rawLabel = asText(item.train) ?? asText(item.trainNumber);
+  if (!rawLabel) return undefined;
+  const label = normalizeServiceLabel(rawLabel);
 
   const route = stationNames(item.route);
   const via = stationNames(item.via);
@@ -488,8 +494,9 @@ async function fetchIris(boardMinutes: number): Promise<BoardResult> {
 function mapDbRestEntry(raw: unknown, boardMinutes: number, kind: 'arrival' | 'departure') {
   const item = asRecord(raw);
   const line = asRecord(item.line);
-  const label = asText(line.name) ?? asText(line.id);
-  if (!label) return undefined;
+  const rawLabel = asText(line.name) ?? asText(line.id);
+  if (!rawLabel) return undefined;
+  const label = normalizeServiceLabel(rawLabel);
 
   const scheduled = parseIsoTime(item.plannedWhen ?? item.when, boardMinutes);
   if (scheduled === undefined) return undefined;
