@@ -67,35 +67,56 @@ export function ImpactMetricsRow({
     },
   ];
 
+  if (compact) {
+    const compactCells: Cell[] = [
+      ...cells,
+      {
+        label: 'Trains',
+        value: `${metrics.trainsAffected}`,
+      },
+    ];
+
+    return (
+      <View className={cn('bg-panel-raised rounded-xl px-2.5', className)}>
+        {compactCells.map((cell, index) => (
+          <View
+            key={cell.label}
+            className={cn(
+              'gap-0.5 py-2',
+              index < compactCells.length - 1 && 'border-border border-b',
+            )}
+          >
+            <Typography type="body-xs" color="muted">
+              {cell.label.replace(' minutes', '').replace('Broken ', '')}
+            </Typography>
+            <Typography type="body" weight="semibold">
+              {cell.value}
+            </Typography>
+            {cell.saved !== undefined && (
+              <Delta compact saved={cell.saved} unit={cell.savedUnit ?? ''} />
+            )}
+          </View>
+        ))}
+      </View>
+    );
+  }
+
   return (
     <View className={cn('flex-row flex-wrap gap-2', className)}>
       {cells.map((cell) => (
-        <View
-          key={cell.label}
-          className={cn(
-            'bg-panel-raised rounded-xl px-2.5 py-2',
-            compact ? 'min-w-0 basis-[46%]' : 'min-w-32 flex-1',
-          )}
-        >
+        <View key={cell.label} className="bg-panel-raised min-w-32 flex-1 rounded-xl px-2.5 py-2">
           <Typography type="body-xs" color="muted">
-            {compact ? cell.label.replace(' minutes', '').replace('Broken ', '') : cell.label}
+            {cell.label}
           </Typography>
           <Typography type="body" weight="semibold" className="mt-0.5">
             {cell.value}
           </Typography>
-          {cell.saved !== undefined && (
-            <Delta compact={compact} saved={cell.saved} unit={cell.savedUnit ?? ''} />
-          )}
+          {cell.saved !== undefined && <Delta saved={cell.saved} unit={cell.savedUnit ?? ''} />}
         </View>
       ))}
-      <View
-        className={cn(
-          'bg-panel-raised rounded-xl px-2.5 py-2',
-          compact ? 'min-w-0 basis-[46%]' : 'min-w-32 flex-1',
-        )}
-      >
+      <View className="bg-panel-raised min-w-32 flex-1 rounded-xl px-2.5 py-2">
         <Typography type="body-xs" color="muted">
-          {compact ? 'Trains' : 'Trains touched'}
+          Trains touched
         </Typography>
         <Typography type="body" weight="semibold" className="mt-0.5">
           {metrics.trainsAffected}
