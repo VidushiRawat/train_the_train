@@ -20,7 +20,10 @@ export default function DecisionScreen() {
   const selectedId = pending
     ? (selectedByIncident[pending.id] ?? pending.recommendedId)
     : undefined;
-  const isRecommendedSelected = selectedId === pending?.recommendedId;
+  const agentProposals =
+    pending?.proposals.filter((proposal) => proposal.author !== 'arbiter') ?? [];
+  const selectedAlternativeId =
+    selectedId && selectedId !== pending?.recommendedId ? selectedId : undefined;
   const lastChosen = lastDecision?.proposals.find(
     (proposal) => proposal.id === lastDecision.resolution?.chosenId,
   );
@@ -76,20 +79,23 @@ export default function DecisionScreen() {
                 Agent proposals
               </Typography>
               <Typography type="body-xs" color="muted">
-                Tap a plan to select it. The arbiter&apos;s pick is marked.
+                Compare options A and B, then review the arbiter below.
               </Typography>
             </View>
 
-            {pending.proposals.map((proposal) => (
-              <ProposalCard
-                key={proposal.id}
-                proposal={proposal}
-                baseline={pending.baseline}
-                isRecommended={proposal.id === pending.recommendedId}
-                isSelected={proposal.id === selectedId}
-                onSelect={(id) => select(pending.id, id)}
-              />
-            ))}
+            <View className="flex-row flex-wrap items-stretch gap-3">
+              {agentProposals.map((proposal) => (
+                <View key={proposal.id} style={{ flexBasis: 0, flexGrow: 1, minWidth: 280 }}>
+                  <ProposalCard
+                    proposal={proposal}
+                    baseline={pending.baseline}
+                    isRecommended={proposal.id === pending.recommendedId}
+                    isSelected={proposal.id === selectedId}
+                    onSelect={(id) => select(pending.id, id)}
+                  />
+                </View>
+              ))}
+            </View>
 
             <Panel title="Arbiter" hint={`Confidence ${Math.round(pending.confidence * 100)}%`}>
               <View className="gap-2">
@@ -109,11 +115,19 @@ export default function DecisionScreen() {
               <Button variant="primary" onPress={() => decide(pending.recommendedId)}>
                 <Button.Label>Accept recommendation · option {pending.recommendedId}</Button.Label>
               </Button>
-              {!isRecommendedSelected && selectedId && (
-                <Button variant="outline" onPress={() => decide(selectedId)}>
-                  <Button.Label>Override · apply option {selectedId}</Button.Label>
-                </Button>
-              )}
+              <Button
+                variant="danger-soft"
+                isDisabled={!selectedAlternativeId}
+                onPress={() => {
+                  if (selectedAlternativeId) decide(selectedAlternativeId);
+                }}
+              >
+                <Button.Label>
+                  {selectedAlternativeId
+                    ? `Reject AI recommendation · apply option ${selectedAlternativeId}`
+                    : 'Select a different option to reject'}
+                </Button.Label>
+              </Button>
             </View>
           </>
         ) : (
