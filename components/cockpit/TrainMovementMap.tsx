@@ -179,36 +179,98 @@ function CurrentImpactSummary({ trains }: { trains: StationTrain[] }) {
 
   if (!leadTrain) return null;
 
-  const affectedLabel = `${trains.length} affected ${trains.length === 1 ? 'service' : 'services'}`;
-  const detailParts = [
-    delayedCount > 0 ? `${delayedCount} delayed` : null,
-    cancelledCount > 0 ? `${cancelledCount} cancelled` : null,
-  ].filter(Boolean);
+  const hasCancellation = cancelledCount > 0;
+  const expectedDeparture = leadTrain.scheduledDeparture + leadTrain.delayMin;
+  const statusLabel = leadTrain.cancelled ? 'Cancelled' : `+${leadTrain.delayMin} min`;
 
   return (
-    <View className="border-danger/35 bg-danger-soft gap-2 rounded-xl border p-3">
-      <View className="flex-row flex-wrap items-center justify-between gap-2">
-        <Typography type="body-xs" className="text-danger font-bold tracking-wide uppercase">
-          Current impact
-        </Typography>
-        <Typography type="body-xs" className="text-danger font-semibold">
-          {affectedLabel} · {detailParts.join(' · ')}
-        </Typography>
-      </View>
+    <View
+      className={`overflow-hidden rounded-xl border ${
+        hasCancellation ? 'border-danger/45 bg-danger-soft' : 'border-warning/45 bg-warning-soft'
+      }`}
+    >
+      <View className="flex-row">
+        <View className={`w-1 ${hasCancellation ? 'bg-danger' : 'bg-warning'}`} />
+        <View className="min-w-0 flex-1 gap-3 p-3">
+          <View className="flex-row flex-wrap items-center justify-between gap-2">
+            <View className="flex-row items-center gap-2">
+              <View
+                className={`size-2 rounded-full ${hasCancellation ? 'bg-danger' : 'bg-warning'}`}
+              />
+              <Typography
+                type="body-xs"
+                className={`font-bold tracking-wide uppercase ${
+                  hasCancellation ? 'text-danger' : 'text-warning'
+                }`}
+              >
+                Current impact
+              </Typography>
+            </View>
+            <View className="border-border bg-panel-raised rounded-full border px-2.5 py-1">
+              <Typography type="body-xs" className="text-foreground font-semibold">
+                {trains.length} affected {trains.length === 1 ? 'service' : 'services'}
+              </Typography>
+            </View>
+          </View>
 
-      <View className="flex-row flex-wrap items-end justify-between gap-x-3 gap-y-1">
-        <View className="min-w-0 flex-1">
-          <Typography type="h4" className="text-foreground font-bold">
-            {leadTrain.service} to {leadTrain.destination}
-          </Typography>
-          <Typography type="body-xs" className="text-muted">
-            {leadTrain.platform > 0 ? `Platform ${leadTrain.platform}` : 'Platform pending'} ·
-            Highest current impact
-          </Typography>
+          <View className="flex-row flex-wrap items-end justify-between gap-x-4 gap-y-2">
+            <View className="min-w-44 flex-1 gap-0.5">
+              <Typography type="body-xs" className="text-muted font-semibold uppercase">
+                Highest priority
+              </Typography>
+              <Typography type="h4" className="text-foreground font-bold">
+                {leadTrain.service}
+              </Typography>
+              <Typography type="body-sm" className="text-foreground">
+                To {leadTrain.destination}
+              </Typography>
+            </View>
+            <View
+              className={`min-w-28 items-end rounded-lg border px-3 py-2 ${
+                hasCancellation
+                  ? 'border-danger/35 bg-danger/10'
+                  : 'border-warning/35 bg-warning/10'
+              }`}
+            >
+              <Typography type="body-xs" className="text-muted font-semibold uppercase">
+                Status
+              </Typography>
+              <Typography
+                type="h3"
+                className={`font-bold ${hasCancellation ? 'text-danger' : 'text-warning'}`}
+              >
+                {statusLabel}
+              </Typography>
+            </View>
+          </View>
+
+          <View className="border-border flex-row flex-wrap border-t pt-2.5">
+            <View className="min-w-28 flex-1 gap-0.5 pr-3">
+              <Typography type="body-xs" className="text-muted uppercase">
+                Platform
+              </Typography>
+              <Typography type="body-sm" className="text-foreground font-bold">
+                {leadTrain.platform > 0 ? leadTrain.platform : 'Pending'}
+              </Typography>
+            </View>
+            <View className="border-border min-w-28 flex-1 gap-0.5 border-l px-3">
+              <Typography type="body-xs" className="text-muted uppercase">
+                {leadTrain.cancelled ? 'Scheduled' : 'Expected'}
+              </Typography>
+              <Typography type="body-sm" className="text-foreground font-bold">
+                {clockTime(leadTrain.cancelled ? leadTrain.scheduledDeparture : expectedDeparture)}
+              </Typography>
+            </View>
+            <View className="border-border min-w-28 flex-1 gap-0.5 border-l pl-3">
+              <Typography type="body-xs" className="text-muted uppercase">
+                Issue split
+              </Typography>
+              <Typography type="body-sm" className="text-foreground font-bold">
+                {delayedCount} delayed · {cancelledCount} cancelled
+              </Typography>
+            </View>
+          </View>
         </View>
-        <Typography type="h3" className="text-danger font-bold">
-          {leadTrain.cancelled ? 'Cancelled' : `+${leadTrain.delayMin} min`}
-        </Typography>
       </View>
     </View>
   );
