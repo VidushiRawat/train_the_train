@@ -50,7 +50,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Corridor',
+            title: 'Station',
             tabBarIcon: ({ color, size }) => <TrainFront color={color} size={size ?? 24} />,
           }}
         />
