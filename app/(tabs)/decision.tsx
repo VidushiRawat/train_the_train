@@ -83,14 +83,15 @@ export default function DecisionScreen() {
               </Typography>
             </View>
 
-            <View className="flex-row flex-wrap items-stretch gap-3">
+            <View className="flex-row items-stretch gap-2">
               {agentProposals.map((proposal) => (
-                <View key={proposal.id} style={{ flexBasis: 0, flexGrow: 1, minWidth: 280 }}>
+                <View key={proposal.id} style={{ flexBasis: 0, flexGrow: 1, minWidth: 0 }}>
                   <ProposalCard
                     proposal={proposal}
                     baseline={pending.baseline}
                     isRecommended={proposal.id === pending.recommendedId}
                     isSelected={proposal.id === selectedId}
+                    compact
                     onSelect={(id) => select(pending.id, id)}
                   />
                 </View>

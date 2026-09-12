@@ -8,6 +8,7 @@ interface ImpactMetricsRowProps {
   metrics: ImpactMetrics;
   /** When given, each cell shows the delta against doing nothing. */
   baseline?: ImpactMetrics;
+  compact?: boolean;
   className?: string;
 }
 
@@ -19,11 +20,11 @@ interface Cell {
   savedUnit?: string;
 }
 
-function Delta({ saved, unit }: { saved: number; unit: string }) {
+function Delta({ compact, saved, unit }: { compact?: boolean; saved: number; unit: string }) {
   if (saved === 0) {
     return (
       <Typography type="body-xs" color="muted">
-        same as no action
+        {compact ? 'No change' : 'same as no action'}
       </Typography>
     );
   }
@@ -32,13 +33,19 @@ function Delta({ saved, unit }: { saved: number; unit: string }) {
     <Typography type="body-xs" className={better ? 'text-success' : 'text-warning'}>
       {better ? '−' : '+'}
       {Math.abs(saved)}
-      {unit} vs no action
+      {unit}
+      {compact ? '' : ' vs no action'}
     </Typography>
   );
 }
 
 /** The three numbers every plan is judged on. */
-export function ImpactMetricsRow({ metrics, baseline, className }: ImpactMetricsRowProps) {
+export function ImpactMetricsRow({
+  metrics,
+  baseline,
+  compact = false,
+  className,
+}: ImpactMetricsRowProps) {
   const cells: Cell[] = [
     {
       label: 'Delay minutes',
@@ -63,19 +70,32 @@ export function ImpactMetricsRow({ metrics, baseline, className }: ImpactMetrics
   return (
     <View className={cn('flex-row flex-wrap gap-2', className)}>
       {cells.map((cell) => (
-        <View key={cell.label} className="bg-panel-raised min-w-32 flex-1 rounded-xl px-2.5 py-2">
+        <View
+          key={cell.label}
+          className={cn(
+            'bg-panel-raised rounded-xl px-2.5 py-2',
+            compact ? 'min-w-0 basis-[46%]' : 'min-w-32 flex-1',
+          )}
+        >
           <Typography type="body-xs" color="muted">
-            {cell.label}
+            {compact ? cell.label.replace(' minutes', '').replace('Broken ', '') : cell.label}
           </Typography>
           <Typography type="body" weight="semibold" className="mt-0.5">
             {cell.value}
           </Typography>
-          {cell.saved !== undefined && <Delta saved={cell.saved} unit={cell.savedUnit ?? ''} />}
+          {cell.saved !== undefined && (
+            <Delta compact={compact} saved={cell.saved} unit={cell.savedUnit ?? ''} />
+          )}
         </View>
       ))}
-      <View className="bg-panel-raised min-w-32 flex-1 rounded-xl px-2.5 py-2">
+      <View
+        className={cn(
+          'bg-panel-raised rounded-xl px-2.5 py-2',
+          compact ? 'min-w-0 basis-[46%]' : 'min-w-32 flex-1',
+        )}
+      >
         <Typography type="body-xs" color="muted">
-          Trains touched
+          {compact ? 'Trains' : 'Trains touched'}
         </Typography>
         <Typography type="body" weight="semibold" className="mt-0.5">
           {metrics.trainsAffected}
