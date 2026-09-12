@@ -555,34 +555,48 @@ export interface HamburgPlatformAssignment {
   hasRealtime: boolean;
 }
 
-/** Live Hamburg Hbf departures that continue south along the Hannover corridor. */
+/** Live Hamburg Hbf departures with a known platform assignment. */
 export async function fetchHamburgPlatformAssignments(): Promise<HamburgPlatformAssignment[]> {
   const boardMinutes = berlinMinutesSinceMidnight();
-  const query = `duration=${WINDOW_AHEAD_MIN}&results=80&language=en&stopovers=true`;
-  const payload = await getJson(`${DB_REST_BASE}/departures?${query}`);
-  const entries = asArray(asRecord(payload).departures)
-    .map((raw) => mapDbRestEntry(raw, boardMinutes, 'departure'))
-    .filter((entry): entry is BoardEntry => entry !== undefined)
-    .filter((entry) => entry.platform !== undefined && entry.departureMin !== undefined)
-    .filter((entry) =>
-      [entry.destination, ...entry.onward].some((name) => {
-        const point = corridorPoint(name);
-        return point !== undefined && point.offset > 0;
-      }),
-    )
-    .sort((a, b) => (a.departureMin ?? 0) - (b.departureMin ?? 0));
+  const problems: string[] = [];
+  const loaders: [FeedSource, (minutes: number) => Promise<BoardResult>][] =
+    Platform.OS === 'web'
+      ? [
+          [SOURCE_DB_REST, fetchDbRest],
+          [SOURCE_IRIS, fetchIris],
+        ]
+      : [
+          [SOURCE_IRIS, fetchIris],
+          [SOURCE_DB_REST, fetchDbRest],
+        ];
 
-  return entries.map((entry) => ({
-    id: entry.key,
-    service: entry.label,
-    category: entry.category,
-    platform: entry.platform ?? 0,
-    scheduledDeparture: entry.departureMin ?? boardMinutes,
-    delayMin: entry.departureDelayMin,
-    cancelled: entry.cancelled,
-    destination: entry.destination,
-    hasRealtime: entry.hasRealtime,
-  }));
+  for (const [candidate, load] of loaders) {
+    try {
+      const { entries } = await load(boardMinutes);
+      const assignments = entries
+        .filter((entry) => entry.platform !== undefined && entry.departureMin !== undefined)
+        .sort((a, b) => (a.departureMin ?? 0) - (b.departureMin ?? 0))
+        .map((entry) => ({
+          id: entry.key,
+          service: entry.label,
+          category: entry.category,
+          platform: entry.platform ?? 0,
+          scheduledDeparture: entry.departureMin ?? boardMinutes,
+          delayMin: entry.departureDelayMin,
+          cancelled: entry.cancelled,
+          destination: entry.destination,
+          hasRealtime: entry.hasRealtime,
+        }));
+
+      if (assignments.length > 0) return assignments;
+      problems.push(`${candidate.label}: no platform assignments on the board`);
+    } catch (error) {
+      problems.push(describeError(candidate, error));
+    }
+  }
+
+  const detail = problems.join(' · ');
+  throw new Error(Platform.OS === 'web' ? `${detail}. ${WEB_BLOCK_HINT}` : detail);
 }
 
 /* -------------------------------------------------------------------------- */
