@@ -173,15 +173,40 @@ export function TrainMovementMap({ nowSeconds }: { trains: Train[]; nowSeconds: 
 
   return (
     <Panel title="Hamburg Hbf platform view" hint="Live track-specific operating schematic">
-      <View className="border-border bg-surface-secondary mb-3 flex-row flex-wrap gap-x-4 gap-y-2 rounded-lg border px-3 py-2.5">
-        {(['approaching', 'at-platform', 'departed', 'cancelled'] as const).map((movement) => (
-          <View key={movement} className="flex-row items-center gap-1.5">
-            <MovementIcon movement={movement} />
-            <Typography type="body-xs" className={MOVEMENT_COPY[movement].tone}>
-              {MOVEMENT_COPY[movement].label}
+      <View className="border-border bg-surface-secondary mb-3 gap-2.5 rounded-lg border px-3 py-2.5">
+        <View className="min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
+          <View className="bg-success/15 rounded px-1.5 py-0.5">
+            <Typography type="body-xs" weight="bold" className="text-success">
+              LIVE DATA
             </Typography>
           </View>
-        ))}
+          <Typography type="body-xs" className="text-muted shrink">
+            Service and platform assignment
+          </Typography>
+        </View>
+
+        <View className="border-border/70 border-t pt-2.5">
+          <View className="mb-2 min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
+            <View className="bg-warning/15 rounded px-1.5 py-0.5">
+              <Typography type="body-xs" weight="bold" className="text-warning">
+                INFERRED
+              </Typography>
+            </View>
+            <Typography type="body-xs" className="text-muted shrink">
+              Movement from reported departure time
+            </Typography>
+          </View>
+          <View className="flex-row flex-wrap gap-x-4 gap-y-2">
+            {(['approaching', 'at-platform', 'departed', 'cancelled'] as const).map((movement) => (
+              <View key={movement} className="flex-row items-center gap-1.5">
+                <MovementIcon movement={movement} />
+                <Typography type="body-xs" className={MOVEMENT_COPY[movement].tone}>
+                  {MOVEMENT_COPY[movement].label}
+                </Typography>
+              </View>
+            ))}
+          </View>
+        </View>
       </View>
 
       {query.isError ? (
