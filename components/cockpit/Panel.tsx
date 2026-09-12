@@ -39,9 +39,7 @@ export function Panel({
               <Typography
                 type="body-xs"
                 weight="semibold"
-                className="text-muted tracking-[2px]"
-                numberOfLines={1}
-                ellipsizeMode="tail"
+                className="text-muted web:break-normal web:hyphens-none tracking-[2px]"
               >
                 {title.toUpperCase()}
               </Typography>
@@ -50,9 +48,7 @@ export function Panel({
               <Typography
                 type="body-xs"
                 color="muted"
-                className="mt-0.5"
-                numberOfLines={1}
-                ellipsizeMode="tail"
+                className="web:break-normal web:hyphens-none mt-0.5"
               >
                 {hint}
               </Typography>

@@ -108,13 +108,11 @@ function MovementGroup({
           <Typography
             type="body-sm"
             weight="semibold"
-            className={copy.tone}
-            numberOfLines={1}
-            ellipsizeMode="tail"
+            className={cn('web:break-normal web:hyphens-none', copy.tone)}
           >
             {copy.label}
           </Typography>
-          <Typography type="body-xs" color="muted" numberOfLines={1} ellipsizeMode="tail">
+          <Typography type="body-xs" color="muted" className="web:break-normal web:hyphens-none">
             {copy.description}
           </Typography>
         </View>
@@ -134,9 +132,7 @@ function MovementGroup({
               <Typography
                 type="body-xs"
                 weight="semibold"
-                className="min-w-0 shrink"
-                numberOfLines={1}
-                ellipsizeMode="tail"
+                className="web:break-normal web:hyphens-none min-w-0 shrink"
               >
                 {train.service}
               </Typography>
@@ -182,9 +178,7 @@ export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
         <Typography
           type="body-xs"
           color="muted"
-          className="min-w-0 flex-1"
-          numberOfLines={1}
-          ellipsizeMode="tail"
+          className="web:break-normal web:hyphens-none min-w-0 flex-1"
         >
           Services are live; movement is inferred from the timetable, not GPS. Track details are
           hidden.
@@ -196,18 +190,14 @@ export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
           <Typography
             type="body-sm"
             weight="semibold"
-            className="text-danger"
-            numberOfLines={1}
-            ellipsizeMode="tail"
+            className="text-danger web:break-normal web:hyphens-none"
           >
             Hamburg station board unavailable
           </Typography>
           <Typography
             type="body-xs"
             color="muted"
-            className="mt-1"
-            numberOfLines={1}
-            ellipsizeMode="tail"
+            className="web:break-normal web:hyphens-none mt-1"
           >
             The direct public feed may be blocked in this browser.
           </Typography>
@@ -216,9 +206,7 @@ export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
         <Typography
           type="body-sm"
           color="muted"
-          className="py-6 text-center"
-          numberOfLines={1}
-          ellipsizeMode="tail"
+          className="web:break-normal web:hyphens-none py-6 text-center"
         >
           Loading Hamburg Hauptbahnhof movements…
         </Typography>
