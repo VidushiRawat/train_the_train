@@ -573,20 +573,27 @@ export async function fetchHamburgPlatformAssignments(): Promise<HamburgPlatform
   for (const [candidate, load] of loaders) {
     try {
       const { entries } = await load(boardMinutes);
-      const assignments = entries
+      const assignmentsById = new Map<string, HamburgPlatformAssignment>();
+      entries
         .filter((entry) => entry.platform !== undefined && entry.departureMin !== undefined)
         .sort((a, b) => (a.departureMin ?? 0) - (b.departureMin ?? 0))
-        .map((entry) => ({
-          id: entry.key,
-          service: entry.label,
-          category: entry.category,
-          platform: entry.platform ?? 0,
-          scheduledDeparture: entry.departureMin ?? boardMinutes,
-          delayMin: entry.departureDelayMin,
-          cancelled: entry.cancelled,
-          destination: entry.destination,
-          hasRealtime: entry.hasRealtime,
-        }));
+        .forEach((entry) => {
+          const platform = entry.platform ?? 0;
+          const scheduledDeparture = entry.departureMin ?? boardMinutes;
+          const id = `${entry.key}-${platform}-${slug(entry.destination)}`;
+          assignmentsById.set(id, {
+            id,
+            service: entry.label,
+            category: entry.category,
+            platform,
+            scheduledDeparture,
+            delayMin: entry.departureDelayMin,
+            cancelled: entry.cancelled,
+            destination: entry.destination,
+            hasRealtime: entry.hasRealtime,
+          });
+        });
+      const assignments = [...assignmentsById.values()];
 
       if (assignments.length > 0) return assignments;
       problems.push(`${candidate.label}: no platform assignments on the board`);
