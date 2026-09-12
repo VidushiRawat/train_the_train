@@ -6,7 +6,6 @@ import { View } from 'react-native';
 
 import { CategoryBadge } from '@/components/cockpit/badges';
 import { fetchHamburgPlatformAssignments, type HamburgPlatformAssignment } from '@/lib/db-api';
-import type { Train } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { Panel } from './Panel';
@@ -138,7 +137,7 @@ function MovementGroup({
   );
 }
 
-export function TrainMovementMap({ nowSeconds }: { trains: Train[]; nowSeconds: number }) {
+export function TrainMovementMap({ nowSeconds }: { nowSeconds: number }) {
   const nowMinutes = Math.floor(nowSeconds / 60);
   const query = useQuery({
     queryKey: ['station-board', 'hamburg-hbf'],
@@ -158,7 +157,7 @@ export function TrainMovementMap({ nowSeconds }: { trains: Train[]; nowSeconds: 
   );
 
   return (
-    <Panel title="Station movements" hint="Hamburg Hauptbahnhof only">
+    <Panel title="Station movements">
       <View className="border-border bg-surface-secondary mb-3 flex-row flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2.5">
         <View className="bg-success/15 rounded px-1.5 py-0.5">
           <Typography type="body-xs" weight="bold" className="text-success">

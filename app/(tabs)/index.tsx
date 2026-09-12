@@ -15,13 +15,12 @@ export default function StationScreen() {
       <CockpitHeader title="Hamburg Hauptbahnhof" subtitle="Concise station movement overview" />
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}>
-        <TrainMovementMap trains={[]} nowSeconds={nowSeconds} />
+        <TrainMovementMap nowSeconds={nowSeconds} />
 
         <View className="flex-row items-start gap-2 px-1">
           <TrainFront size={12} color={muted} />
           <Typography type="body-xs" color="muted" className="flex-1">
-            This view is limited to Hamburg Hauptbahnhof. Movement states are inferred from the
-            station timetable; they are not GPS positions.
+            Movement states are inferred from the station timetable; they are not GPS positions.
           </Typography>
         </View>
       </ScrollView>
