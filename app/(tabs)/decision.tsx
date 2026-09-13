@@ -156,7 +156,10 @@ export default function DecisionScreen() {
       </ScrollView>
 
       {pending && (
-        <View className="border-border bg-panel pb-safe-offset-2 flex-row gap-2 border-t px-4 pt-3">
+        <View
+          className="border-border bg-panel pb-safe-offset-2 gap-2 border-t px-4 pt-3"
+          style={{ flexDirection: 'row' }}
+        >
           <Button
             variant="primary"
             className="min-w-0 flex-1"
