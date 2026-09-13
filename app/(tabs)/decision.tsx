@@ -83,7 +83,7 @@ export default function DecisionScreen() {
                 Agent proposals
               </Typography>
               <Typography type="body-xs" color="muted">
-                Compare options A and B, then review the arbiter below.
+                Compare options A and B, then review the orchestrator below.
               </Typography>
             </View>
 
@@ -102,7 +102,10 @@ export default function DecisionScreen() {
               ))}
             </View>
 
-            <Panel title="Arbiter" hint={`Confidence ${Math.round(pending.confidence * 100)}%`}>
+            <Panel
+              title="Orchestrator"
+              hint={`Confidence ${Math.round(pending.confidence * 100)}%`}
+            >
               <View className="gap-2">
                 <View className="flex-row items-center gap-2">
                   <OptionBadge id={pending.recommendedId} author="arbiter" />
