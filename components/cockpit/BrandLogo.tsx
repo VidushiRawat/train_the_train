@@ -1,13 +1,13 @@
 import { useThemeColor } from 'heroui-native';
 import { View } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, Stop, Text as SvgText, TSpan } from 'react-native-svg';
+import Svg, { Defs, G, LinearGradient, Path, Stop, Text as SvgText, TSpan } from 'react-native-svg';
 
 interface BrandLogoProps {
   size?: number;
 }
 
-/** Theme-native recreation of the supplied Train the Train logo artwork. */
-export function BrandLogo({ size = 72 }: BrandLogoProps) {
+/** Theme-native vector recreation of the supplied Train the Train logo artwork. */
+export function BrandLogo({ size = 88 }: BrandLogoProps) {
   const [accent, link, foreground, surface, muted] = useThemeColor([
     'accent',
     'link',
@@ -22,102 +22,131 @@ export function BrandLogo({ size = 72 }: BrandLogoProps) {
       accessibilityLabel="Train the Train — Ladies on Track. Predict, optimize, improve."
       style={{ height: size, width: size }}
     >
-      <Svg height={size} viewBox="0 0 360 360" width={size}>
+      <Svg height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 400 400" width="100%">
         <Defs>
-          <LinearGradient id="greenArrow" x1="0" x2="1" y1="0" y2="1">
-            <Stop offset="0" stopColor={accent} />
+          <LinearGradient id="logoGreen" x1="0" x2="1" y1="0" y2="1">
+            <Stop offset="0" stopColor={accent} stopOpacity="0.72" />
+            <Stop offset="0.55" stopColor={accent} />
             <Stop offset="1" stopColor={link} />
           </LinearGradient>
-          <LinearGradient id="blueArrow" x1="0" x2="1" y1="0" y2="1">
-            <Stop offset="0" stopColor={link} />
+          <LinearGradient id="logoBlue" x1="0" x2="0.7" y1="0" y2="1">
+            <Stop offset="0" stopColor={link} stopOpacity="0.45" />
+            <Stop offset="0.45" stopColor={link} />
             <Stop offset="1" stopColor={foreground} />
           </LinearGradient>
-          <LinearGradient id="trainStripe" x1="0" x2="1" y1="0" y2="0">
-            <Stop offset="0" stopColor={link} />
-            <Stop offset="1" stopColor={accent} />
+          <LinearGradient id="trainBand" x1="0" x2="1" y1="0" y2="0">
+            <Stop offset="0" stopColor={accent} />
+            <Stop offset="0.58" stopColor={accent} />
+            <Stop offset="1" stopColor={link} />
           </LinearGradient>
         </Defs>
 
-        {/* Circular arrows */}
-        <Path
-          d="M72 145C68 78 122 23 208 25V7l58 48-58 46V76c-58 0-99 30-108 75z"
-          fill="url(#greenArrow)"
-        />
-        <Path
-          d="M270 75c38 50 43 123 6 177-13 18-29 33-49 44v23l-58-47 58-47v24c37-28 51-72 38-113-5-17-14-32-27-45z"
-          fill="url(#blueArrow)"
-        />
+        {/* Two arrows form one complete ring around the train. */}
+        <G>
+          <Path
+            d="M101 151A107 107 0 0 1 236 38"
+            fill="none"
+            stroke="url(#logoGreen)"
+            strokeLinecap="square"
+            strokeWidth="31"
+          />
+          <Path d="M225 16l49 39-49 38z" fill="url(#logoGreen)" />
+          <Path
+            d="M269 58A107 107 0 0 1 154 252"
+            fill="none"
+            stroke="url(#logoBlue)"
+            strokeLinecap="square"
+            strokeWidth="31"
+          />
+          <Path d="M166 224l-49 37 48 40z" fill="url(#logoBlue)" />
+          <Path
+            d="M139 256a107 107 0 0 1-42-48"
+            fill="none"
+            stroke="url(#logoGreen)"
+            strokeLinecap="square"
+            strokeOpacity="0.55"
+            strokeWidth="25"
+          />
+        </G>
 
-        {/* Streamlined train body */}
-        <Path
-          d="M43 202c49-20 101-50 149-82 22-15 42-18 63-13 28 7 51 32 64 70 7 22 6 45-9 56-15 10-45 12-80 7l-80-12-107-5 63-15z"
-          fill={surface}
-          stroke={foreground}
-          strokeLinejoin="round"
-          strokeWidth="7"
-        />
-        <Path d="M190 120c24-15 47-15 68-3 18 11 34 32 44 60-28 2-46-4-57-18z" fill={foreground} />
-        <Path d="M258 122c14 9 26 24 35 44-17-1-27-6-34-16l-18-24z" fill={link} />
-        <Path
-          d="M60 203c53-20 101-47 137-70l28 42c12 19 27 31 47 37-35 4-66 1-94-7l-56-16z"
-          fill={surface}
-        />
-        <Path d="M92 190l22-12v23l-22 5z" fill={foreground} />
-        <Path d="M121 175l25-14v33l-25 6z" fill={foreground} />
-        <Path d="M154 156l29-17v45l-29 7z" fill={foreground} />
-        <Path d="M191 135c12-7 23-6 32 3l19 28-51 13z" fill={foreground} />
-        <Path
-          d="M44 215c71-12 126-19 166-18 27 1 47 8 68 14-32 10-66 11-101 4-41-8-87-7-133 0z"
-          fill="url(#trainStripe)"
-        />
-        <Path
-          d="M52 228c69-2 130 5 184 22l55 8-8 13-60-11c-53-16-109-25-171-32z"
-          fill={foreground}
-        />
-        <Path d="M62 238c61 7 113 18 157 34l50 11-8 11-49-12c-45-17-95-32-150-44z" fill={muted} />
-        <Path
-          d="M296 177c8 0 12 6 10 14-2 7-7 11-13 10-6-2-8-7-5-14 2-6 5-10 8-10z"
-          fill={surface}
-        />
+        {/* High-speed train, centred inside and crossing the circular mark. */}
+        <G>
+          <Path
+            d="M44 190c48-21 94-48 139-77 25-16 45-24 68-21 35 4 61 26 82 66 9 17 12 37 6 50-7 14-25 22-54 22-34 0-68-6-101-17-38-12-84-15-140-11l50-18z"
+            fill={surface}
+            stroke={foreground}
+            strokeLinejoin="round"
+            strokeWidth="5"
+          />
+          <Path
+            d="M181 113c26-17 49-22 70-17 33 7 56 29 74 65-23 4-43 1-57-10-9-7-17-17-27-30-18-22-36-27-60-8z"
+            fill={foreground}
+          />
+          <Path d="M251 105c25 5 44 19 59 43-19 1-32-3-41-11z" fill={link} opacity="0.55" />
+          <Path d="M102 166l16-9v25l-16 5z" fill={foreground} />
+          <Path d="M124 153l20-12v34l-20 6z" fill={foreground} />
+          <Path d="M151 137l24-15v44l-24 7z" fill={foreground} />
+          <Path d="M182 119c15-8 28-7 39 5l22 29-61 14z" fill={foreground} />
+          <Path
+            d="M44 194c60-12 111-21 153-22 28-1 48 7 66 17 20 11 42 15 68 12-11 16-31 22-61 20-29-1-57-8-86-17-39-12-86-15-140-10z"
+            fill="url(#trainBand)"
+          />
+          <Path
+            d="M44 203c68 0 125 8 171 24l108 17-9 13-105-19c-45-16-100-28-165-35z"
+            fill={foreground}
+          />
+          <Path
+            d="M61 218c58 8 107 20 148 35l88 20-9 11-85-21c-42-16-89-31-142-45z"
+            fill={muted}
+            opacity="0.72"
+          />
+          <Path
+            d="M318 163c7-1 11 4 10 11-1 7-5 11-10 10-5 0-8-5-7-10 1-6 3-10 7-11z"
+            fill={surface}
+          />
+        </G>
 
-        {/* Wordmark and straplines */}
+        {/* Reference wordmark: one line, centred, with the green middle word. */}
         <SvgText
           fill={foreground}
           fontFamily="Inter_700Bold"
-          fontSize="31"
+          fontSize="38"
           fontWeight="700"
+          letterSpacing="-1"
           textAnchor="middle"
-          x="180"
-          y="307"
+          x="200"
+          y="327"
         >
           <TSpan>TRAIN </TSpan>
           <TSpan fill={accent}>THE</TSpan>
           <TSpan> TRAIN</TSpan>
         </SvgText>
-        <Path d="M27 326h49M284 326h49" stroke={foreground} strokeWidth="2" />
+
+        <Path d="M20 350h52M328 350h52" stroke={foreground} strokeWidth="1.5" />
         <SvgText
           fill={foreground}
           fontFamily="Inter_500Medium"
-          fontSize="11"
+          fontSize="13"
           fontWeight="500"
-          letterSpacing="5"
+          letterSpacing="5.5"
           textAnchor="middle"
-          x="180"
-          y="330"
+          x="200"
+          y="355"
         >
           LADIES ON TRACK
         </SvgText>
+
         <SvgText
-          fill={link}
+          fill={muted}
           fontFamily="Inter_600SemiBold"
-          fontSize="7.5"
+          fontSize="10"
           fontWeight="600"
-          letterSpacing="2"
+          letterSpacing="2.5"
           textAnchor="middle"
-          x="180"
-          y="349"
+          x="200"
+          y="385"
         >
-          PREDICT · OPTIMIZE · <TSpan fill={accent}>IMPROVE</TSpan>
+          PREDICT <TSpan fill={link}>• OPTIMIZE</TSpan> <TSpan fill={accent}>• IMPROVE</TSpan>
         </SvgText>
       </Svg>
     </View>
