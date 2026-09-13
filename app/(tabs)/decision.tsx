@@ -24,6 +24,10 @@ export default function DecisionScreen() {
     pending?.proposals.filter((proposal) => proposal.author !== 'arbiter') ?? [];
   const selectedAlternativeId =
     selectedId && selectedId !== pending?.recommendedId ? selectedId : undefined;
+  const fallbackAlternativeId = agentProposals.find(
+    (proposal) => proposal.id !== pending?.recommendedId,
+  )?.id;
+  const rejectProposalId = selectedAlternativeId ?? fallbackAlternativeId;
   const lastChosen = lastDecision?.proposals.find(
     (proposal) => proposal.id === lastDecision.resolution?.chosenId,
   );
@@ -152,21 +156,26 @@ export default function DecisionScreen() {
       </ScrollView>
 
       {pending && (
-        <View className="border-border bg-panel pb-safe-offset-2 gap-2 border-t px-4 pt-3">
-          <Button variant="primary" onPress={() => decide(pending.recommendedId)}>
-            <Button.Label>Accept recommendation · option {pending.recommendedId}</Button.Label>
+        <View className="border-border bg-panel pb-safe-offset-2 flex-row gap-2 border-t px-4 pt-3">
+          <Button
+            variant="primary"
+            className="min-w-0 flex-1"
+            onPress={() => decide(pending.recommendedId)}
+          >
+            <Button.Label className="text-center">
+              Accept · option {pending.recommendedId}
+            </Button.Label>
           </Button>
           <Button
-            variant="danger-soft"
-            isDisabled={!selectedAlternativeId}
+            variant="danger"
+            className="min-w-0 flex-1"
+            isDisabled={!rejectProposalId}
             onPress={() => {
-              if (selectedAlternativeId) decide(selectedAlternativeId);
+              if (rejectProposalId) decide(rejectProposalId);
             }}
           >
-            <Button.Label>
-              {selectedAlternativeId
-                ? `Reject AI recommendation · apply option ${selectedAlternativeId}`
-                : 'Select a different option to reject'}
+            <Button.Label className="text-center">
+              {rejectProposalId ? `Reject AI · option ${rejectProposalId}` : 'Reject AI'}
             </Button.Label>
           </Button>
         </View>
