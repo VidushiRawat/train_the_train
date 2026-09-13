@@ -156,8 +156,30 @@ export default function DecisionScreen() {
           <Button variant="primary" onPress={() => decide(pending.recommendedId)}>
             <Button.Label>Accept recommendation · option {pending.recommendedId}</Button.Label>
           </Button>
+
+          <View className="flex-row flex-wrap items-center gap-2">
+            <Typography type="body-xs" color="muted" className="mr-1">
+              To reject, choose an alternative:
+            </Typography>
+            {agentProposals
+              .filter((proposal) => proposal.id !== pending.recommendedId)
+              .map((proposal) => (
+                <Button
+                  key={proposal.id}
+                  variant="secondary"
+                  onPress={() => select(pending.id, proposal.id)}
+                >
+                  <Button.Label>
+                    {selectedAlternativeId === proposal.id
+                      ? `Option ${proposal.id} selected`
+                      : `Select option ${proposal.id}`}
+                  </Button.Label>
+                </Button>
+              ))}
+          </View>
+
           <Button
-            variant="danger-soft"
+            variant="primary"
             isDisabled={!selectedAlternativeId}
             onPress={() => {
               if (selectedAlternativeId) decide(selectedAlternativeId);
@@ -165,8 +187,8 @@ export default function DecisionScreen() {
           >
             <Button.Label>
               {selectedAlternativeId
-                ? `Reject AI recommendation · apply option ${selectedAlternativeId}`
-                : 'Select a different option to reject'}
+                ? `Reject recommendation · apply option ${selectedAlternativeId}`
+                : 'Reject recommendation · choose an alternative above'}
             </Button.Label>
           </Button>
         </View>
