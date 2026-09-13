@@ -11,7 +11,7 @@ import { OptionBadge } from './badges';
 const AUTHOR_LABEL: Record<ProposalAuthor, string> = {
   network: 'Agent A · Network flow',
   passenger: 'Agent B · Passenger impact',
-  arbiter: 'Orchestrator · Blended plan',
+  arbiter: 'Orchestrator recommendation',
 };
 
 const AUTHOR_COMPACT_LABEL: Record<ProposalAuthor, string> = {
@@ -23,7 +23,7 @@ const AUTHOR_COMPACT_LABEL: Record<ProposalAuthor, string> = {
 const AUTHOR_GOAL: Record<ProposalAuthor, string> = {
   network: 'Minimise total delay minutes',
   passenger: 'Minimise broken journeys',
-  arbiter: 'Best of both, weighed up',
+  arbiter: 'Coordinates the final recommendation',
 };
 
 interface ProposalCardProps {

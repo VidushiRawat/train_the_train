@@ -26,7 +26,7 @@ export default function LogScreen() {
           <Panel title="Nothing logged yet">
             <Typography type="body-sm" color="muted">
               Every resolved incident is written here with the option that was applied, whether the
-              system or a controller made the call, and what it saved.
+              system or a dispatcher made the call, and what it saved.
             </Typography>
           </Panel>
         }

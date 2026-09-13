@@ -63,19 +63,20 @@ export interface CorridorSnapshot {
   source: FeedSource;
   /** Epoch milliseconds when the board was read. */
   fetchedAt: number;
-  /** Board time in Berlin minutes since midnight. */
+  /** Board time in Hamburg minutes since midnight. */
   boardMinutes: number;
   /** Services on the Hamburg Hbf board before the corridor filter. */
   boardSize: number;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Berlin wall clock                                                           */
+/* Hamburg wall clock                                                          */
 /* -------------------------------------------------------------------------- */
 
-function berlinParts(date: Date) {
+function hamburgParts(date: Date) {
   try {
     const parts = new Intl.DateTimeFormat('en-GB', {
+      // Hamburg uses the Europe/Berlin IANA timezone.
       timeZone: 'Europe/Berlin',
       hour: '2-digit',
       minute: '2-digit',
@@ -89,21 +90,22 @@ function berlinParts(date: Date) {
   }
 }
 
-/** Seconds since midnight in Berlin — the corridor's own clock. */
-export function berlinSecondsSinceMidnight(date = new Date()) {
-  const { hour, minute, second } = berlinParts(date);
+/** Seconds since midnight in Hamburg — the corridor's own clock. */
+export function hamburgSecondsSinceMidnight(date = new Date()) {
+  const { hour, minute, second } = hamburgParts(date);
   return hour * 3600 + minute * 60 + second;
 }
 
-/** Minutes since midnight in Berlin. */
-export function berlinMinutesSinceMidnight(date = new Date()) {
-  return Math.floor(berlinSecondsSinceMidnight(date) / 60);
+/** Minutes since midnight in Hamburg. */
+export function hamburgMinutesSinceMidnight(date = new Date()) {
+  return Math.floor(hamburgSecondsSinceMidnight(date) / 60);
 }
 
-/** "Tue 12 Sep" in Berlin, for the cockpit header. */
-export function berlinDateLabel(date = new Date()) {
+/** "Tue 12 Sep" in Hamburg, for the cockpit header. */
+export function hamburgDateLabel(date = new Date()) {
   try {
     return new Intl.DateTimeFormat('en-GB', {
+      // Hamburg uses the Europe/Berlin IANA timezone.
       timeZone: 'Europe/Berlin',
       weekday: 'short',
       day: 'numeric',
@@ -325,7 +327,7 @@ interface BoardEntry {
   route: string[];
   /** Stops still to come after Hamburg Hbf. */
   onward: string[];
-  /** Scheduled arrival at Hamburg Hbf, Berlin minutes since midnight. */
+  /** Scheduled arrival at Hamburg Hbf, Hamburg minutes since midnight. */
   arrivalMin?: number;
   /** Scheduled departure from Hamburg Hbf. */
   departureMin?: number;
@@ -392,12 +394,12 @@ function parseBoardTime(value: unknown, boardMinutes: number): number | undefine
   return minutes < boardMinutes - 240 ? minutes + 1440 : minutes;
 }
 
-/** ISO timestamp → Berlin minutes since midnight, rolled forward past midnight. */
+/** ISO timestamp → Hamburg minutes since midnight, rolled forward past midnight. */
 function parseIsoTime(value: unknown, boardMinutes: number): number | undefined {
   if (typeof value !== 'string') return undefined;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return undefined;
-  const minutes = berlinMinutesSinceMidnight(date);
+  const minutes = hamburgMinutesSinceMidnight(date);
   return minutes < boardMinutes - 240 ? minutes + 1440 : minutes;
 }
 
@@ -564,7 +566,7 @@ export interface HamburgPlatformAssignment {
 
 /** Live Hamburg Hbf departures with a known platform assignment. */
 export async function fetchHamburgPlatformAssignments(): Promise<HamburgPlatformAssignment[]> {
-  const boardMinutes = berlinMinutesSinceMidnight();
+  const boardMinutes = hamburgMinutesSinceMidnight();
   const problems: string[] = [];
   const loaders: [FeedSource, (minutes: number) => Promise<BoardResult>][] =
     Platform.OS === 'web'
@@ -772,7 +774,7 @@ const WEB_BLOCK_HINT =
  * The first source that yields eligible arrivals wins.
  */
 export async function fetchCorridorSnapshot(): Promise<CorridorSnapshot> {
-  const boardMinutes = berlinMinutesSinceMidnight();
+  const boardMinutes = hamburgMinutesSinceMidnight();
   const problems: string[] = [];
   let emptySnapshot: CorridorSnapshot | undefined;
 

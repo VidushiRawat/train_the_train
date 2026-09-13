@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { createIncident, describeLiveDisruption, savingsVersusBaseline } from './agents';
-import { berlinSecondsSinceMidnight, type CorridorSnapshot } from './db-api';
+import { hamburgSecondsSinceMidnight, type CorridorSnapshot } from './db-api';
 import type { DecisionMode, Incident, Proposal, Scoreboard, Train } from './types';
 
 const MAX_LOG_ENTRIES = 40;
@@ -35,7 +35,7 @@ export interface FeedState {
 
 /**
  * What this session's decisions did to a train. Kept apart from the live feed
- * so a poll never wipes a controller's call, and a decision never pretends the
+ * so a poll never wipes a dispatcher's call, and a decision never pretends the
  * real delay changed.
  */
 interface TrainOverlay {
@@ -112,13 +112,13 @@ function applyPlanOverlays(
 }
 
 interface CockpitState {
-  /** Berlin wall clock, seconds since midnight. */
+  /** Hamburg wall clock, seconds since midnight. */
   nowSeconds: number;
   trains: Train[];
   overlays: Record<string, TrainOverlay>;
   watch: Record<string, WatchEntry>;
   feed: FeedState;
-  /** Incident waiting for a controller decision, if any. */
+  /** Incident waiting for a dispatcher decision, if any. */
   pending: Incident | null;
   /** Most recent auto-applied incident, surfaced as a passive notice. */
   lastAuto: Incident | null;
@@ -185,7 +185,7 @@ function byImpact(a: Train, b: Train) {
 }
 
 export const useCockpitStore = create<CockpitState>((set, get) => ({
-  nowSeconds: berlinSecondsSinceMidnight(),
+  nowSeconds: hamburgSecondsSinceMidnight(),
   trains: [],
   overlays: {},
   watch: {},
@@ -195,14 +195,14 @@ export const useCockpitStore = create<CockpitState>((set, get) => ({
   log: [],
   score: EMPTY_SCORE,
 
-  tick: () => set({ nowSeconds: berlinSecondsSinceMidnight() }),
+  tick: () => set({ nowSeconds: hamburgSecondsSinceMidnight() }),
 
   setFeedState: (feed) => set({ feed }),
 
   /**
    * Fold a live board reading into the cockpit: refresh every train, then
    * raise an incident for the worst newly reported delay. Minor ones are
-   * applied straight away, bigger ones wait for the controller.
+   * applied straight away, bigger ones wait for the dispatcher.
    */
   applyFeed: (snapshot) => {
     const state = get();

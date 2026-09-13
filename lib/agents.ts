@@ -18,12 +18,12 @@ import { formatCount, formatTimeOfDay } from './utils';
 /**
  * Decision engine behind the cockpit.
  *
- * Live DB corridor state -> two competing agents -> arbiter:
+ * Live DB corridor state -> two competing agents -> orchestrator:
  *  - Agent A (network) minimises total delay minutes across the corridor.
  *  - Agent B (passenger) minimises broken journeys and missed connections.
- *  - The arbiter scores both, may build a blended option, and gates the
- *    result: minor incidents are applied automatically, bigger ones wait
- *    for the controller.
+ *  - The orchestrator scores both options and gates the result: minor
+ *    incidents are applied automatically, bigger ones wait
+ *    for the dispatcher.
  *
  * Delays, platforms and causes come from the live feed; the plans and their
  * impact are a deterministic model, not ML.
@@ -37,8 +37,6 @@ const MIN_TRANSFER_MIN = 2;
 const REPLATFORM_WALK_MIN = 1;
 /** Arrival window, in minutes, where two trains fight for the same paths. */
 const CONFLICT_WINDOW_MIN = 6;
-/** Transfers this size or larger are worth protecting in the blended plan. */
-const HIGH_VALUE_TRANSFER = 35;
 /** A train delayed this much counts as disrupting the people on board. */
 const STRANDED_DELAY_MIN = 8;
 
@@ -158,22 +156,13 @@ function buildPlan({
 }
 
 /**
- * Arbiter cost function. One missed connection is treated as roughly eight
+ * Orchestrator cost function. One missed connection is treated as roughly eight
  * minutes of network delay, and every disrupted passenger adds a little more,
  * so a plan that protects people can outweigh a slightly faster one.
  */
 export function planScore(metrics: ImpactMetrics) {
   return (
     metrics.networkDelayMin + metrics.missedConnections * 8 + metrics.passengersDisrupted * 0.12
-  );
-}
-
-function sameOutcome(a: ImpactMetrics, b: ImpactMetrics) {
-  return (
-    a.networkDelayMin === b.networkDelayMin &&
-    a.missedConnections === b.missedConnections &&
-    a.trainsAffected === b.trainsAffected &&
-    a.passengersDisrupted === b.passengersDisrupted
   );
 }
 
@@ -198,7 +187,7 @@ interface Evaluation {
   gateReason: string;
 }
 
-/** Run both agents and the arbiter over one disruption. */
+/** Run both agents and the orchestrator over one disruption. */
 export function evaluate(trains: Train[], train: Train, delayMin: number): Evaluation {
   const arrivalDelay = effectiveDelay(delayMin);
   const knockOn = findKnockOn(trains, train, delayMin);
@@ -300,60 +289,6 @@ export function evaluate(trains: Train[], train: Train, delayMin: number): Evalu
 
   const proposals: Proposal[] = [proposalA, proposalB];
 
-  // Arbiter blend — remove the path conflict and protect only the transfers
-  // that carry real numbers.
-  const highValue = savable.filter(
-    (connection) => connection.transferPassengers >= HIGH_VALUE_TRANSFER,
-  );
-  if (canReplatform || highValue.length > 0) {
-    const planC = buildPlan({
-      train,
-      delayMin,
-      replatform: canReplatform,
-      holdIds: highValue.map((connection) => connection.id),
-      knockOn,
-      sparePlatform,
-    });
-
-    const heldC = planC.effects.heldConnections;
-    const isDistinct =
-      !sameOutcome(planC.metrics, planA.metrics) && !sameOutcome(planC.metrics, planB.metrics);
-
-    if (isDistinct) {
-      proposals.push({
-        id: 'C',
-        author: 'arbiter',
-        title:
-          heldC.length > 0
-            ? canReplatform
-              ? `Re-platform ${train.service} to ${sparePlatform} and ${describeHolds(heldC)}`
-              : `Hold only ${heldC.map((item) => item.service).join(' and ')}`
-            : `Re-platform ${train.service} to platform ${sparePlatform}, no holds`,
-        actions: [
-          canReplatform
-            ? `Route ${train.service} into platform ${sparePlatform}, clearing the conflicting path`
-            : `Keep ${train.service} on platform ${train.platform}`,
-          ...heldC.map(
-            (item) =>
-              `Hold ${item.service} at platform ${item.platform} for ${item.holdMin} min — ${item.transferPassengers} passengers`,
-          ),
-          ...planC.effects.brokenConnections.map(
-            (item) =>
-              `Release ${item.service} on time, rebook ${item.transferPassengers} passengers onto the next service`,
-          ),
-        ],
-        reason:
-          'Takes the cheap half of each agent: the path conflict disappears, and only the transfers carrying real passenger numbers are held.',
-        tradeoff:
-          planC.effects.brokenConnections.length > 0
-            ? `${formatCount(planC.effects.brokenConnections.length, 'smaller transfer')} still breaks.`
-            : 'Slightly more delay than the pure network plan.',
-        metrics: planC.metrics,
-        effects: planC.effects,
-      });
-    }
-  }
-
   const ranked = [...proposals].sort((a, b) => {
     const delta = planScore(a.metrics) - planScore(b.metrics);
     if (delta !== 0) return delta;
@@ -368,7 +303,7 @@ export function evaluate(trains: Train[], train: Train, delayMin: number): Evalu
   const authorLabel: Record<Proposal['author'], string> = {
     network: 'the network agent',
     passenger: 'the passenger agent',
-    arbiter: 'a blend of both agents',
+    arbiter: 'the orchestrator',
   };
 
   const rationale =
@@ -403,13 +338,13 @@ function resolveSeverity(
   if (train.cancelled) {
     return {
       severity: 'major',
-      reason: `${train.service} is cancelled in the live feed — a controller decides how its passengers travel on.`,
+      reason: `${train.service} is cancelled in the live feed — a dispatcher decides how its passengers travel on.`,
     };
   }
   if (baseline.missedConnections > 0) {
     return {
       severity: 'major',
-      reason: `${formatCount(baseline.missedConnections, 'connection')} at Hamburg Hbf is at risk — a controller signs this off.`,
+      reason: `${formatCount(baseline.missedConnections, 'connection')} at Hamburg Hbf is at risk — a dispatcher signs this off.`,
     };
   }
   if (arrivalDelay >= 8) {

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { BrandLogo } from '@/components/cockpit/BrandLogo';
 
-import { berlinDateLabel } from '@/lib/db-api';
+import { hamburgDateLabel } from '@/lib/db-api';
 import { useCockpitStore } from '@/lib/store';
 import { formatClock } from '@/lib/utils';
 
@@ -21,7 +21,7 @@ const FEED_INDICATOR = {
 
 const LOGO_SIZE = 72;
 
-/** Control-room title bar: wordmark, feed state, screen name and Berlin clock. */
+/** Control-room title bar: wordmark, feed state, screen name and Hamburg clock. */
 export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
   const nowSeconds = useCockpitStore((state) => state.nowSeconds);
   const feedStatus = useCockpitStore((state) => state.feed.status);
@@ -54,7 +54,7 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
             {formatClock(nowSeconds)}
           </Typography>
           <Typography type="body-xs" color="muted" className="web:break-normal web:hyphens-none">
-            {berlinDateLabel()} · Berlin
+            {hamburgDateLabel()} · Hamburg
           </Typography>
         </View>
       </View>

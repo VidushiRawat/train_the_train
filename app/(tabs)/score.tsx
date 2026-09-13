@@ -75,7 +75,7 @@ export default function ScoreScreen() {
               <StatTile
                 label="Human decision"
                 value={`${score.humanHandled}`}
-                hint="controller signed off"
+                hint="dispatcher signed off"
                 tone="accent"
                 icon={<Users size={14} color={accent} />}
               />

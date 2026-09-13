@@ -21,7 +21,7 @@ export default function TabLayout() {
   ]);
   const pending = useCockpitStore((state) => state.pending);
 
-  // Live DB board + Berlin clock run for as long as the cockpit is open.
+  // Live DB board + Hamburg clock run for as long as the cockpit is open.
   useCorridorFeed();
   useEffect(() => startCorridorClock(), []);
 

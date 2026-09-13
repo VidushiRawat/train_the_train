@@ -6,7 +6,7 @@
 
 Optimizing re-scheduling platform for railway dispatchers.
 
-`train_the_train` is a dispatcher cockpit for monitoring Hamburg Hbf rail operations, detecting disruptive delays, and comparing AI-generated rescheduling recommendations. It reads live station-board data, builds a local digital twin of the current corridor state, evaluates network and passenger trade-offs, and lets a controller accept or override the recommended plan.
+`train_the_train` is a dispatcher cockpit for monitoring Hamburg Hbf rail operations, detecting disruptive delays, and comparing AI-generated rescheduling recommendations. It reads live station-board data, builds a local digital twin of the current corridor state, evaluates network and passenger trade-offs, and lets a dispatcher accept or override the recommended plan.
 
 ## Product Flow
 
@@ -16,7 +16,7 @@ Optimizing re-scheduling platform for railway dispatchers.
 2. The app normalizes that feed into a digital twin: trains, platforms, passenger estimates, connections, and current disruption state.
 3. Agent A optimizes for network flow by reducing total delay minutes and path conflicts.
 4. Agent B optimizes for passengers by protecting transfers and reducing broken journeys.
-5. The orchestrator compares both options, may create a blended proposal, and chooses the recommended action.
+5. The orchestrator compares both visible options and chooses the recommended action.
 6. The dispatcher reviews the recommendation in the decision console, accepts it, or rejects it by applying an alternative.
 7. The selected decision updates the local world state, scoreboard, and decision log.
 
@@ -56,13 +56,13 @@ train_the_train/
 
 The cockpit continuously polls the station-board feed in `useCorridorFeed.ts`. `db-api.ts` tries the available DB data sources, normalizes platform, route, timing, delay, and cancellation information, and produces a consistent corridor snapshot.
 
-`store.ts` folds each snapshot into the app's digital twin. When a delay or cancellation is significant enough, it creates an incident. Minor incidents can be auto-applied; major incidents are held for the controller in the decision console.
+`store.ts` folds each snapshot into the app's digital twin. When a delay or cancellation is significant enough, it creates an incident. Minor incidents can be auto-applied; major incidents are held for the dispatcher in the decision console.
 
 `agents.ts` evaluates the incident with deterministic planning logic:
 
 - Network agent: minimizes total delay minutes and downstream path conflicts.
 - Passenger agent: protects transfers and reduces broken connections.
-- Orchestrator: scores the options, may build a blended plan, and chooses the recommendation.
+- Orchestrator: scores options A and B, then chooses the recommendation.
 
 When the dispatcher accepts or rejects the recommendation, the selected proposal is applied as a local overlay. The app then updates the station view, the scorecard, and the decision log for the current session.
 
@@ -90,19 +90,33 @@ The project declares `npm@10.9.0`. If your global npm is newer, you can still us
 ```sh
 cd train_the_train
 npm install
-npx expo start
+npm run start:phone
 ```
 
 Then choose one of the Expo options:
 
 - Press `i` for the iOS simulator.
 - Press `a` for the Android emulator.
-- Scan the QR code with Expo Go on a physical device.
+- Scan the QR code with the phone camera on a physical device, or open the printed Expo URL on the phone.
 - Press `w` to run the web app.
+
+All local Expo start scripts use port `8082` so they do not collide with a default Expo server already running on `8081`. For phones, use `npm run start:phone`; it forces Expo Go, uses tunnel mode, and clears the Metro cache.
+
+If the camera says `No usable data found`, do not keep rescanning the terminal QR. Copy the `exp://` or `exps://` URL printed by Expo near the QR code, send it to the phone, and open that link directly. Terminal QR codes can fail when the font is too small, the IDE terminal clips the code, or the contrast is poor.
+
+If opening the copied URL shows `Must specify "expo-platform" header or "platform" query parameter`, the link is being opened as a plain browser request instead of by Expo Go. For a browser-opened manifest URL, append `?platform=ios` on iPhone or `?platform=android` on Android, then open that full URL on the phone.
+
+If the Expo URL still does not open, check that Expo Go is installed and updated, disable VPN/private relay temporarily, and make sure the terminal says `Using Expo Go` rather than `development build`.
+
+If you are using a custom development build instead of Expo Go, run `npm run start:dev-client` and open the QR code with that development build.
 
 ## Useful Commands
 
 ```sh
+npm run start
+npm run start:phone
+npm run start:tunnel
+npm run start:dev-client
 npm run lint
 npm run format:check
 npm run expo-check

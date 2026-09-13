@@ -127,7 +127,7 @@ export interface PlanEffects {
 }
 
 export interface Proposal {
-  /** Stable option letter: A = network, B = passenger, C = arbiter blend. */
+  /** Stable option letter: A = network, B = passenger. */
   id: string;
   author: ProposalAuthor;
   /** One-line action, e.g. "Hold ICE 692 at platform 12 for 6 min". */
@@ -171,13 +171,13 @@ export interface Incident {
   disruption: Disruption;
   delayMin: number;
   severity: Severity;
-  /** Metrics if the controller does nothing. */
+  /** Metrics if the dispatcher does nothing. */
   baseline: ImpactMetrics;
   proposals: Proposal[];
   recommendedId: string;
-  /** Why the arbiter landed on the recommendation. */
+  /** Why the orchestrator landed on the recommendation. */
   rationale: string;
-  /** Arbiter confidence, 0..1. */
+  /** Orchestrator confidence, 0..1. */
   confidence: number;
   /** Why the incident was gated to a human, when it was. */
   gateReason: string;

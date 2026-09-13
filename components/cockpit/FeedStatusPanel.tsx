@@ -3,7 +3,7 @@ import { RefreshCw, Radio, WifiOff } from 'lucide-react-native';
 import { View } from 'react-native';
 
 import { useFeedFetching, useFeedRefresh, FEED_INTERVAL_MS } from '@/hooks/useCorridorFeed';
-import { berlinSecondsSinceMidnight } from '@/lib/db-api';
+import { hamburgSecondsSinceMidnight } from '@/lib/db-api';
 import { useCockpitStore } from '@/lib/store';
 import { formatClock } from '@/lib/utils';
 
@@ -26,11 +26,11 @@ export function FeedStatusPanel() {
   const readAt =
     feed.fetchedAt === undefined
       ? undefined
-      : formatClock(berlinSecondsSinceMidnight(new Date(feed.fetchedAt)));
+      : formatClock(hamburgSecondsSinceMidnight(new Date(feed.fetchedAt)));
   const ageSeconds =
     feed.fetchedAt === undefined
       ? undefined
-      : Math.max(0, nowSeconds - berlinSecondsSinceMidnight(new Date(feed.fetchedAt)));
+      : Math.max(0, nowSeconds - hamburgSecondsSinceMidnight(new Date(feed.fetchedAt)));
 
   return (
     <Panel
