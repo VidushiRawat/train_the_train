@@ -14,6 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: 'railmind',
     version: process.env.BILT_APP_VERSION ?? '1.0.0',
     orientation: 'portrait',
+    icon: './public/icons/icon-512.png',
     userInterfaceStyle: 'automatic',
     scheme: 'railmind',
     runtimeVersion: {
@@ -21,6 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     assetBundlePatterns: ['**/*'],
     ios: {
+      icon: './public/icons/icon-512.png',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -29,6 +31,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: process.env.BILT_ANDROID_PACKAGE ?? 'me.bilt.railmind',
+      adaptiveIcon: {
+        foregroundImage: './public/icons/icon-512-maskable.png',
+        backgroundColor: '#ffffff',
+      },
     },
     web: {
       bundler: 'metro',
@@ -40,7 +46,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       appStoreAppId: process.env.BILT_APP_STORE_APP_ID,
     },
-    plugins: ['expo-router', 'expo-font', ...nativePlugins],
+    plugins: [
+      'expo-router',
+      'expo-font',
+      [
+        'expo-splash-screen',
+        {
+          image: './assets/train-the-train-logo.png',
+          resizeMode: 'contain',
+          backgroundColor: '#ffffff',
+          imageWidth: 180,
+        },
+      ],
+      ...nativePlugins,
+    ],
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
