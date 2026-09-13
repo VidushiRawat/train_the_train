@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: 'railmind',
     version: process.env.BILT_APP_VERSION ?? '1.0.0',
     orientation: 'portrait',
-    icon: './public/icons/icon-512.png',
+    icon: './assets/train-the-train-icon.png',
     userInterfaceStyle: 'automatic',
     scheme: 'railmind',
     runtimeVersion: {
@@ -22,7 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     assetBundlePatterns: ['**/*'],
     ios: {
-      icon: './public/icons/icon-512.png',
+      icon: './assets/train-the-train-icon.png',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
