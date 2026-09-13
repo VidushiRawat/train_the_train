@@ -36,7 +36,7 @@ export default function DecisionScreen() {
     <View className="bg-background flex-1">
       <CockpitHeader
         title="Decision console"
-        subtitle={pending ? 'One incident is waiting for your call' : 'No incident is waiting'}
+        subtitle={pending ? 'One incident is waiting for your call' : 'No active impact or delay'}
       />
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}>
@@ -133,16 +133,15 @@ export default function DecisionScreen() {
           </>
         ) : (
           <>
-            <Panel title="Standing by" hint="Minor incidents never reach this screen">
+            <Panel title="No active delay" hint="No impact currently needs a decision">
               <View className="gap-3">
                 <Typography type="body-sm">
-                  Nothing on the live board needs a call right now. The Hamburg Hbf feed is re-read
-                  every 45 seconds; as soon as a service at Hamburg Hbf is reported 3 minutes or
-                  more down, both agents run. Anything under 8 minutes with no connection at risk is
-                  applied on the spot — bigger events land here with both plans side by side.
+                  The live Hamburg Hbf board has no active impact waiting for a decision. This
+                  console will show the affected service and response options when an actionable
+                  delay or cancellation is detected.
                 </Typography>
-                <Button variant="secondary" onPress={() => router.push('/')}>
-                  <Button.Label>Back to Hamburg overview</Button.Label>
+                <Button variant="secondary" onPress={() => router.replace('/')}>
+                  <Button.Label>Go to Station</Button.Label>
                 </Button>
               </View>
             </Panel>

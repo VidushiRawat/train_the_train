@@ -26,7 +26,7 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
   return (
     <View className="border-border bg-panel pt-safe-offset-2 flex-row items-center gap-3 border-b px-3 pb-2">
       <Image
-        source={require('@/assets/train-the-train-logo.png')}
+        source={require('../../assets/train-the-train-logo.png')}
         accessibilityLabel="Train the Train — Ladies on Track"
         resizeMode="contain"
         style={{ width: 64, height: 64 }}
