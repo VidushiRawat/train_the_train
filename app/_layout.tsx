@@ -44,8 +44,8 @@ function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 
 export { ErrorBoundary };
 
-// Train2Train is a control-room product: dark theme only.
-Uniwind.setTheme('dark');
+// Keep the logo-led light palette consistent across web and native devices.
+Uniwind.setTheme('light');
 
 void SplashScreen.preventAutoHideAsync();
 

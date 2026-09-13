@@ -7,13 +7,12 @@ import { useEffect } from 'react';
 import { startCorridorClock, useCockpitStore } from '@/lib/store';
 import { useCorridorFeed } from '@/hooks/useCorridorFeed';
 
-/** Control-room chrome is dark, so status bar content is always light. */
-const STATUS_BAR_STYLE = 'light' as const;
+/** The logo-led light canvas needs dark system status-bar content. */
+const STATUS_BAR_STYLE = 'dark' as const;
 
 export default function TabLayout() {
-  const [background, foreground, border, accent, muted, danger, panel] = useThemeColor([
+  const [background, border, accent, muted, danger, panel] = useThemeColor([
     'background',
-    'foreground',
     'border',
     'accent',
     'muted',
@@ -44,7 +43,7 @@ export default function TabLayout() {
           tabBarActiveTintColor: accent,
           tabBarInactiveTintColor: muted,
           tabBarLabelStyle: { fontSize: 11 },
-          tabBarBadgeStyle: { backgroundColor: danger, color: foreground, fontSize: 10 },
+          tabBarBadgeStyle: { backgroundColor: danger, color: background, fontSize: 10 },
         }}
       >
         <Tabs.Screen

@@ -40,123 +40,124 @@
 @source './node_modules/heroui-native/lib';
 
 /*
- * Train2Train — rail control room palette.
- * Dark-only product: the same token table is declared for both theme
- * variants so native (Expo Go) resolves identical values to web.
+ * Train2Train — logo-led rail palette.
+ * White and pale blue form the canvas, deep rail navy carries text, and the
+ * logo green is the primary action color. Both variants stay aligned so
+ * Expo Go and web resolve the same branded values.
  */
 @layer theme {
   :root {
     @variant light {
-      --background: oklch(0.17 0.028 254);
-      --foreground: oklch(0.96 0.008 254);
+      --background: oklch(0.975 0.012 220);
+      --foreground: oklch(0.29 0.055 253);
 
-      --surface: oklch(0.215 0.03 254);
-      --surface-foreground: oklch(0.95 0.008 254);
-      --surface-secondary: oklch(0.25 0.032 254);
-      --surface-secondary-foreground: oklch(0.95 0.008 254);
-      --surface-tertiary: oklch(0.29 0.034 254);
-      --surface-tertiary-foreground: oklch(0.95 0.008 254);
+      --surface: oklch(0.995 0.004 220);
+      --surface-foreground: oklch(0.29 0.055 253);
+      --surface-secondary: oklch(0.95 0.025 220);
+      --surface-secondary-foreground: oklch(0.29 0.055 253);
+      --surface-tertiary: oklch(0.92 0.042 220);
+      --surface-tertiary-foreground: oklch(0.27 0.06 253);
 
-      --overlay: oklch(0.225 0.03 254);
-      --overlay-foreground: oklch(0.95 0.008 254);
-      --backdrop: oklch(0.1 0.02 254 / 60%);
+      --overlay: oklch(0.995 0.004 220);
+      --overlay-foreground: oklch(0.29 0.055 253);
+      --backdrop: oklch(0.2 0.045 253 / 30%);
 
-      --muted: oklch(0.68 0.022 254);
+      --muted: oklch(0.5 0.04 245);
 
-      --default: oklch(0.27 0.032 254);
-      --default-foreground: oklch(0.94 0.01 254);
+      --default: oklch(0.92 0.026 220);
+      --default-foreground: oklch(0.29 0.055 253);
 
-      --accent: oklch(0.75 0.13 205);
-      --accent-foreground: oklch(0.18 0.03 254);
+      --accent: oklch(0.69 0.15 140);
+      --accent-foreground: oklch(0.2 0.045 253);
 
-      --field-background: oklch(0.24 0.03 254);
-      --field-foreground: oklch(0.95 0.008 254);
+      --field-background: oklch(0.995 0.004 220);
+      --field-foreground: oklch(0.29 0.055 253);
       --field-placeholder: var(--muted);
-      --field-border: oklch(0.33 0.032 254);
+      --field-border: oklch(0.84 0.04 225);
 
-      --success: oklch(0.76 0.16 158);
-      --success-foreground: oklch(0.17 0.03 254);
-      --warning: oklch(0.83 0.14 82);
-      --warning-foreground: oklch(0.17 0.03 254);
-      --danger: oklch(0.66 0.19 25);
-      --danger-foreground: oklch(0.98 0.005 254);
+      --success: oklch(0.69 0.15 140);
+      --success-foreground: oklch(0.2 0.045 253);
+      --warning: oklch(0.79 0.14 82);
+      --warning-foreground: oklch(0.24 0.05 253);
+      --danger: oklch(0.61 0.2 27);
+      --danger-foreground: oklch(0.99 0.003 220);
 
-      --segment: oklch(0.24 0.03 254);
-      --segment-foreground: oklch(0.95 0.008 254);
+      --segment: oklch(0.92 0.026 220);
+      --segment-foreground: oklch(0.29 0.055 253);
 
-      --border: oklch(0.33 0.032 254);
-      --separator: oklch(0.31 0.03 254);
+      --border: oklch(0.84 0.04 225);
+      --separator: oklch(0.79 0.045 225);
       --focus: var(--accent);
-      --link: oklch(0.78 0.12 205);
+      --link: oklch(0.51 0.13 248);
 
-      --surface-shadow: 0 0 0 0 transparent inset;
-      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.18) inset;
-      --field-shadow: 0 0 0 0 transparent inset;
+      --surface-shadow: 0 1px 3px 0 rgb(20 47 77 / 8%);
+      --overlay-shadow: 0 8px 24px 0 rgb(20 47 77 / 14%);
+      --field-shadow: 0 1px 2px 0 rgb(20 47 77 / 6%);
     }
 
     @variant dark {
-      --background: oklch(0.17 0.028 254);
-      --foreground: oklch(0.96 0.008 254);
+      --background: oklch(0.975 0.012 220);
+      --foreground: oklch(0.29 0.055 253);
 
-      --surface: oklch(0.215 0.03 254);
-      --surface-foreground: oklch(0.95 0.008 254);
-      --surface-secondary: oklch(0.25 0.032 254);
-      --surface-secondary-foreground: oklch(0.95 0.008 254);
-      --surface-tertiary: oklch(0.29 0.034 254);
-      --surface-tertiary-foreground: oklch(0.95 0.008 254);
+      --surface: oklch(0.995 0.004 220);
+      --surface-foreground: oklch(0.29 0.055 253);
+      --surface-secondary: oklch(0.95 0.025 220);
+      --surface-secondary-foreground: oklch(0.29 0.055 253);
+      --surface-tertiary: oklch(0.92 0.042 220);
+      --surface-tertiary-foreground: oklch(0.27 0.06 253);
 
-      --overlay: oklch(0.225 0.03 254);
-      --overlay-foreground: oklch(0.95 0.008 254);
-      --backdrop: oklch(0.1 0.02 254 / 60%);
+      --overlay: oklch(0.995 0.004 220);
+      --overlay-foreground: oklch(0.29 0.055 253);
+      --backdrop: oklch(0.2 0.045 253 / 30%);
 
-      --muted: oklch(0.68 0.022 254);
+      --muted: oklch(0.5 0.04 245);
 
-      --default: oklch(0.27 0.032 254);
-      --default-foreground: oklch(0.94 0.01 254);
+      --default: oklch(0.92 0.026 220);
+      --default-foreground: oklch(0.29 0.055 253);
 
-      --accent: oklch(0.75 0.13 205);
-      --accent-foreground: oklch(0.18 0.03 254);
+      --accent: oklch(0.69 0.15 140);
+      --accent-foreground: oklch(0.2 0.045 253);
 
-      --field-background: oklch(0.24 0.03 254);
-      --field-foreground: oklch(0.95 0.008 254);
+      --field-background: oklch(0.995 0.004 220);
+      --field-foreground: oklch(0.29 0.055 253);
       --field-placeholder: var(--muted);
-      --field-border: oklch(0.33 0.032 254);
+      --field-border: oklch(0.84 0.04 225);
 
-      --success: oklch(0.76 0.16 158);
-      --success-foreground: oklch(0.17 0.03 254);
-      --warning: oklch(0.83 0.14 82);
-      --warning-foreground: oklch(0.17 0.03 254);
-      --danger: oklch(0.66 0.19 25);
-      --danger-foreground: oklch(0.98 0.005 254);
+      --success: oklch(0.69 0.15 140);
+      --success-foreground: oklch(0.2 0.045 253);
+      --warning: oklch(0.79 0.14 82);
+      --warning-foreground: oklch(0.24 0.05 253);
+      --danger: oklch(0.61 0.2 27);
+      --danger-foreground: oklch(0.99 0.003 220);
 
-      --segment: oklch(0.24 0.03 254);
-      --segment-foreground: oklch(0.95 0.008 254);
+      --segment: oklch(0.92 0.026 220);
+      --segment-foreground: oklch(0.29 0.055 253);
 
-      --border: oklch(0.33 0.032 254);
-      --separator: oklch(0.31 0.03 254);
+      --border: oklch(0.84 0.04 225);
+      --separator: oklch(0.79 0.045 225);
       --focus: var(--accent);
-      --link: oklch(0.78 0.12 205);
+      --link: oklch(0.51 0.13 248);
 
-      --surface-shadow: 0 0 0 0 transparent inset;
-      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.18) inset;
-      --field-shadow: 0 0 0 0 transparent inset;
+      --surface-shadow: 0 1px 3px 0 rgb(20 47 77 / 8%);
+      --overlay-shadow: 0 8px 24px 0 rgb(20 47 77 / 14%);
+      --field-shadow: 0 1px 2px 0 rgb(20 47 77 / 6%);
     }
   }
 }
 
 /* Domain palette: train categories, agent identities, rail furniture. */
 @theme {
-  --color-ice: oklch(0.8 0.11 232);
-  --color-ic: oklch(0.76 0.12 300);
-  --color-re: oklch(0.79 0.14 145);
-  --color-rb: oklch(0.72 0.04 254);
-  --color-agent-network: oklch(0.74 0.13 232);
-  --color-agent-passenger: oklch(0.76 0.13 330);
-  --color-agent-arbiter: oklch(0.83 0.13 82);
-  --color-rail: oklch(0.34 0.03 254);
-  --color-rail-live: oklch(0.5 0.05 254);
-  --color-panel: oklch(0.2 0.028 254);
-  --color-panel-raised: oklch(0.245 0.03 254);
+  --color-ice: oklch(0.51 0.13 248);
+  --color-ic: oklch(0.57 0.12 286);
+  --color-re: oklch(0.62 0.15 140);
+  --color-rb: oklch(0.55 0.055 245);
+  --color-agent-network: oklch(0.51 0.13 248);
+  --color-agent-passenger: oklch(0.58 0.14 330);
+  --color-agent-arbiter: oklch(0.67 0.14 82);
+  --color-rail: oklch(0.79 0.04 225);
+  --color-rail-live: oklch(0.48 0.11 248);
+  --color-panel: oklch(0.995 0.004 220);
+  --color-panel-raised: oklch(0.94 0.03 220);
 }
 
 /*
