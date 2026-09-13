@@ -98,8 +98,8 @@ export default function ScoreScreen() {
               Hbf, passengers whose journey stayed intact, and transfers there that survived.
             </Typography>
             <Typography type="body-sm" color="muted">
-              The arbiter treats one broken connection as roughly eight minutes of network delay,
-              which is why it sometimes accepts a longer hold to keep people moving.
+              The orchestrator treats one broken connection as roughly eight minutes of network
+              delay, which is why it sometimes accepts a longer hold to keep people moving.
             </Typography>
             <Typography type="body-xs" color="muted">
               Delay minutes come from the live DB feed. Passenger figures are estimates from service

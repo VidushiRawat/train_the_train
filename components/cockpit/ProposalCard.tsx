@@ -11,13 +11,13 @@ import { OptionBadge } from './badges';
 const AUTHOR_LABEL: Record<ProposalAuthor, string> = {
   network: 'Agent A · Network flow',
   passenger: 'Agent B · Passenger impact',
-  arbiter: 'Arbiter · Blended plan',
+  arbiter: 'Orchestrator · Blended plan',
 };
 
 const AUTHOR_COMPACT_LABEL: Record<ProposalAuthor, string> = {
   network: 'Network',
   passenger: 'Passenger',
-  arbiter: 'Arbiter',
+  arbiter: 'Orchestrator',
 };
 
 const AUTHOR_GOAL: Record<ProposalAuthor, string> = {
