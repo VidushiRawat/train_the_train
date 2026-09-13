@@ -22,7 +22,7 @@ export function BrandLogo({ size = 88 }: BrandLogoProps) {
       accessibilityLabel="Train the Train — Ladies on Track. Predict, optimize, improve."
       style={{ height: size, width: size }}
     >
-      <Svg height={size} viewBox="0 0 400 400" width={size}>
+      <Svg height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 400 400" width="100%">
         <Defs>
           <LinearGradient id="logoGreen" x1="0" x2="1" y1="0" y2="1">
             <Stop offset="0" stopColor={accent} stopOpacity="0.72" />
