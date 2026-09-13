@@ -17,6 +17,9 @@ const FEED_INDICATOR = {
   error: { dot: 'bg-danger', text: 'text-danger', label: 'NO FEED' },
 } as const;
 
+const TRAIN_LOGO = require('../../assets/train-the-train-logo.png');
+const LOGO_SIZE = 72;
+
 /** Control-room title bar: wordmark, feed state, screen name and Berlin clock. */
 export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
   const nowSeconds = useCockpitStore((state) => state.nowSeconds);
@@ -25,12 +28,19 @@ export function CockpitHeader({ title, subtitle }: CockpitHeaderProps) {
 
   return (
     <View className="border-border bg-panel pt-safe-offset-2 flex-row items-center gap-3 border-b px-3 pb-2">
-      <Image
-        source={require('../../assets/train-the-train-logo.png')}
-        accessibilityLabel="Train the Train — Ladies on Track"
-        resizeMode="contain"
-        style={{ width: 64, height: 64 }}
-      />
+      <View
+        className="shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white"
+        style={{ height: LOGO_SIZE, width: LOGO_SIZE }}
+      >
+        <Image
+          source={TRAIN_LOGO}
+          accessibilityLabel="Train the Train — Ladies on Track"
+          accessibilityIgnoresInvertColors
+          fadeDuration={0}
+          resizeMode="contain"
+          style={{ height: LOGO_SIZE, width: LOGO_SIZE }}
+        />
+      </View>
 
       <View className="min-w-0 flex-1">
         <Typography type="h4" weight="semibold" className="web:break-normal web:hyphens-none">

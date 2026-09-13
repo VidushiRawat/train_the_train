@@ -111,25 +111,6 @@ export default function DecisionScreen() {
                 </Typography>
               </View>
             </Panel>
-
-            <View className="gap-2">
-              <Button variant="primary" onPress={() => decide(pending.recommendedId)}>
-                <Button.Label>Accept recommendation · option {pending.recommendedId}</Button.Label>
-              </Button>
-              <Button
-                variant="danger-soft"
-                isDisabled={!selectedAlternativeId}
-                onPress={() => {
-                  if (selectedAlternativeId) decide(selectedAlternativeId);
-                }}
-              >
-                <Button.Label>
-                  {selectedAlternativeId
-                    ? `Reject AI recommendation · apply option ${selectedAlternativeId}`
-                    : 'Select a different option to reject'}
-                </Button.Label>
-              </Button>
-            </View>
           </>
         ) : (
           <>
@@ -169,6 +150,27 @@ export default function DecisionScreen() {
           </>
         )}
       </ScrollView>
+
+      {pending && (
+        <View className="border-border bg-panel pb-safe-offset-2 gap-2 border-t px-4 pt-3">
+          <Button variant="primary" onPress={() => decide(pending.recommendedId)}>
+            <Button.Label>Accept recommendation · option {pending.recommendedId}</Button.Label>
+          </Button>
+          <Button
+            variant="danger-soft"
+            isDisabled={!selectedAlternativeId}
+            onPress={() => {
+              if (selectedAlternativeId) decide(selectedAlternativeId);
+            }}
+          >
+            <Button.Label>
+              {selectedAlternativeId
+                ? `Reject AI recommendation · apply option ${selectedAlternativeId}`
+                : 'Select a different option to reject'}
+            </Button.Label>
+          </Button>
+        </View>
+      )}
     </View>
   );
 }
